@@ -19,7 +19,6 @@
 </a>
 <nav aria-label="Primary navigation" class="site-nav" id="primary-menu">
 <a data-i18n="nav.about" href="#about">About</a>
-<a data-i18n="nav.services" href="#services">Services</a>
 <a data-i18n="nav.experience" href="#experience">Experience</a>
 <a data-i18n="nav.projects" href="#projects">Projects</a>
 <a data-i18n="nav.achievements" href="#achievements">Achievements</a>
@@ -34,7 +33,24 @@
 </span>
 </span>
 </button>
-<button aria-label="Switch to French" class="lang-toggle" data-i18n="lang.toggle.label" data-i18n-aria-label="lang.toggle.aria" data-lang-toggle="" type="button">FR</button>
+<div class="lang-switcher" data-lang-switcher="">
+<button aria-expanded="false" aria-haspopup="true" class="lang-trigger" data-i18n-aria-label="lang.toggle.aria" data-lang-trigger="" type="button">
+<span aria-hidden="true" class="lang-flag lang-flag--en" data-lang-flag=""></span>
+<span class="lang-selected" data-lang-selected="" data-i18n="lang.option.en">English</span>
+<span aria-hidden="true" class="lang-caret">▾</span>
+<span class="sr-only" data-i18n="lang.toggle.menu">Open language selector</span>
+</button>
+<div aria-hidden="true" class="lang-menu" data-lang-menu="" role="menu">
+<button aria-checked="false" class="lang-option" data-lang-option="fr" role="menuitemradio" type="button">
+<span aria-hidden="true" class="lang-flag lang-flag--fr"></span>
+<span class="lang-name" data-i18n="lang.option.fr">Français</span>
+</button>
+<button aria-checked="false" class="lang-option" data-lang-option="en" role="menuitemradio" type="button">
+<span aria-hidden="true" class="lang-flag lang-flag--en"></span>
+<span class="lang-name" data-i18n="lang.option.en">English</span>
+</button>
+</div>
+</div>
 </div>
 <button aria-controls="primary-menu" aria-expanded="false" class="nav-toggle" data-i18n="nav.menu">Menu</button>
 </header>
@@ -43,14 +59,14 @@
 <div class="hero-content">
 <p class="eyebrow" data-i18n="hero.eyebrow">Cybersecurity Engineer</p>
 <h1 id="hero-title">Yassine SABIR</h1>
-<p class="hero-subtitle" data-i18n="hero.subtitle">Offensive + defensive specialist engineering ICS incident response tooling, red-team operations, and resilient security architectures.</p>
+<p class="hero-subtitle" data-i18n="hero.subtitle">Junior cybersecurity engineer passionate about ethical hacking and securing IT and industrial systems.</p>
 <div class="cta-group">
 <a class="btn primary" data-i18n="hero.cta.primary" href="#contact">Contact Me</a>
 <a class="btn ghost" data-i18n="hero.cta.secondary" download="" href="assets/SABIR_Yassine_CV.pdf">Download CV</a>
 </div>
 <dl aria-label="Key statistics" class="quick-stats">
 <div>
-<dt>632 / 7,797</dt>
+<dt>632 / 7797</dt>
 <dd data-i18n="hero.stats.ranking">HackTheBox Season 6 global ranking</dd>
 </div>
 <div>
@@ -63,15 +79,16 @@
 <article class="status-card">
 <h2 data-i18n="hero.strengths.title">Key Strengths</h2>
 <ul>
-<li><span class="badge high" data-i18n="hero.strengths.badge.offense">Red Team</span> <span data-i18n="hero.strengths.offense">Adversary emulation across on-prem, cloud, and ICS targets with repeatable kill chains.</span></li>
-<li><span class="badge medium" data-i18n="hero.strengths.badge.ics">ICS DFIR</span> <span data-i18n="hero.strengths.ics">Digital forensics and incident response for industrial automation and OT networks.</span></li>
-<li><span class="badge low" data-i18n="hero.strengths.badge.defense">Blue Team</span> <span data-i18n="hero.strengths.defense">Detection engineering, zero-trust segmentation, and continuous threat monitoring.</span></li>
+<li><span class="badge high" data-i18n="hero.strengths.badge.offensive">Cybersécurité offensive</span> <span data-i18n="hero.strengths.offensive">Tests d’intrusion Web, systèmes et réseaux (Linux &amp; Windows), exploitation de vulnérabilités, énumération et escalade de privilèges.</span></li>
+<li><span class="badge medium" data-i18n="hero.strengths.badge.defensive">Cybersécurité défensive &amp; forensique</span> <span data-i18n="hero.strengths.defensive">Analyse de traces numériques, investigation sur automates industriels, détection d’intrusions, journalisation et corrélation d’événements.</span></li>
+<li><span class="badge medium" data-i18n="hero.strengths.badge.networks">Réseaux &amp; systèmes</span> <span data-i18n="hero.strengths.networks">Conception d’infrastructures sécurisées (multi-DMZ), configuration de pare-feux, VPN, DNS, LDAP, supervision réseau.</span></li>
+<li><span class="badge low" data-i18n="hero.strengths.badge.automation">Analyse, crypto &amp; automatisation</span> <span data-i18n="hero.strengths.automation">Analyse statique/dynamique, reverse engineering, conception de méthodes de chiffrement, développement d’outils et scripts (Python, Bash, C, Java, PHP, Go, PowerShell).</span></li>
 </ul>
 </article>
 </div>
 </section>
 <section aria-labelledby="about-title" class="about" id="about">
-<h2 data-i18n="about.title" id="about-title">Turning adversarial thinking into resilient systems</h2>
+<h2 data-i18n="about.title" id="about-title">Building Resilience Through Cyber Expertise</h2>
 <div aria-label="Terminal showcase of about me details" class="about-terminal">
 <div class="terminal-card">
 <div class="terminal-header">
@@ -82,52 +99,35 @@
 </div>
 <span class="terminal-title">ys4b@portfolio:~</span>
 </div>
-<div class="terminal-body" data-command-en="cat aboutMe.txt" data-command-fr="cat aboutMe.txt" data-hint-fr="# Envie d'en savoir plus ? Contactez-moi ;)" data-output-fr="Salut 👋\nJe suis Yassine, ingenieur en cybersecurite guide par la curiosite et la passion de briser (et proteger) les systemes.\nJ aime analyser les couches techniques, trouver les failles et transformer des problemes complexes en exploits elegants ou solutions durcies.\n\nMon parcours mele recherche academique, projets terrain et de longues heures sur Hack The Box et des challenges CTF.\nOffensif, evaluation de vulnerabilites ou renforcement defensif : je veux comprendre chaque systeme sous toutes ses coutures.\n\nAujourd hui, je cherche une equipe pour repousser mes limites, partager mon expertise et continuer a apprendre -- un exploit a la fois." data-terminal="">
+<div class="terminal-body" data-command-en="cat aboutMe.txt" data-command-fr="cat aboutMe.txt" data-hint-fr="# Envie d'en savoir plus ? Contactez-moi ;)" data-output-fr="Salut 👋\nJe suis Yassine, ingénieur en cybersécurité passionné par l’analyse et la sécurisation de systèmes complexes. Je me spécialise dans la sécurité offensive, l’évaluation des vulnérabilités et le renforcement défensif, guidé par la curiosité et l’excellence.\n\nJe combine recherche académique, expérience pratique et défis concrets sur des plateformes comme HackTheBox et les compétitions CTF. J’aime analyser les couches techniques, découvrir des vulnérabilités et transformer les défis en solutions solides et opérationnelles.\n\nJe suis motivé pour collaborer avec des équipes innovantes, partager mes connaissances et continuer à progresser." data-terminal="">
 <p class="terminal-line"><span class="prompt">YS4B@Portfolio:~ $</span> <span class="command" data-terminal-command="">cat aboutMe.txt</span></p>
-<pre class="terminal-output" data-terminal-output="">Hey there 👋
-I'm Yassine, a cybersecurity engineer driven by curiosity and a passion for breaking (and securing) things.
-I love diving deep into systems, finding vulnerabilities, and turning complex problems into elegant exploits or solutions.
+    <pre class="terminal-output" data-terminal-output="">Hey there 👋
+I'm Yassine, a cybersecurity engineer passionate about understanding and securing complex systems. I specialize in offensive security, vulnerability assessment, and defensive hardening, driven by curiosity and a commitment to excellence.
 
-My journey blends academic research, real-world projects, and countless hours spent on platforms like Hack The Box and CTF challenges.
-Whether it's offensive security, vulnerability assessment, or defensive hardening, I enjoy understanding systems from every angle.
+I combine academic research with hands-on experience and practical challenges on platforms like HackTheBox and CTF competitions. I enjoy analyzing technical layers, uncovering vulnerabilities, and transforming challenges into robust, real-world solutions.
 
-Currently, I'm looking to join a team where I can push my limits, share my expertise, and keep learning -- one exploit at a time.</pre>
+I'm eager to collaborate with innovative teams, share knowledge, and continuously grow.</pre>
 <p class="terminal-line terminal-hint" data-terminal-hint=""><span class="prompt">YS4B@Portfolio:~ $</span> <span class="command" data-i18n="about.terminal.hint"># Curious for a deeper debrief? Reach out ;)</span></p>
 <p class="terminal-line"><span class="prompt">YS4B@Portfolio:~ $</span><span aria-hidden="true" class="cursor" data-terminal-cursor=""></span></p>
 </div>
 <noscript>
-<pre class="terminal-output noscript-output">YS4B@Portfolio:~ $ cat aboutMe.txt
+  <pre class="terminal-output noscript-output">YS4B@Portfolio:~ $ cat aboutMe.txt
 Hey there 👋
-I'm Yassine, a cybersecurity engineer driven by curiosity and a passion for breaking (and securing) things.
-I love diving deep into systems, finding vulnerabilities, and turning complex problems into elegant exploits or solutions.
+I'm Yassine, a cybersecurity engineer passionate about understanding and securing complex systems. I specialize in offensive security, vulnerability assessment, and defensive hardening, driven by curiosity and a commitment to excellence.
 
-My journey blends academic research, real-world projects, and countless hours spent on platforms like Hack The Box and CTF challenges.
-Whether it's offensive security, vulnerability assessment, or defensive hardening, I enjoy understanding systems from every angle.
+I combine academic research with hands-on experience and practical challenges on platforms like HackTheBox and CTF competitions. I enjoy analyzing technical layers, uncovering vulnerabilities, and transforming challenges into robust, real-world solutions.
 
-Currently, I'm looking to join a team where I can push my limits, share my expertise, and keep learning -- one exploit at a time.
+I'm eager to collaborate with innovative teams, share knowledge, and continuously grow.
 YS4B@Portfolio:~ $ # Curious for a deeper debrief? Reach out ;)
 YS4B@Portfolio:~ $</pre>
 </noscript>
 </div>
 </div>
-<div class="about-grid">
-<article class="about-card">
-<h3 data-i18n="about.cards.forensics.title">Industrial Forensics</h3>
-<p data-i18n="about.cards.forensics.body">Run ICS forensics missions that blend firmware dissection with field telemetry capture and anomaly hunting.</p>
-</article>
-<article class="about-card">
-<h3 data-i18n="about.cards.pentesting.title">Penetration Testing</h3>
-<p data-i18n="about.cards.pentesting.body">Design adversary simulations from threat modeling through exploit chains, translating results into prioritized resilience roadmaps.</p>
-</article>
-<article class="about-card">
-<h3 data-i18n="about.cards.architecture.title">Secure Architecture</h3>
-<p data-i18n="about.cards.architecture.body">Engineer zero-trust enclaves that connect identity, segmentation, and observability without slowing delivery teams.</p>
-</article>
 </div>
 </section>
 <section aria-labelledby="htb-title" class="achievements">
 <div class="section-heading">
-<p class="eyebrow" data-i18n="htb.eyebrow">Hack The Box</p>
+<p class="eyebrow" data-i18n="htb.eyebrow">HackTheBox</p>
 <h2 data-i18n="htb.title" id="htb-title">Ranking snapshot</h2>
 </div>
 <div class="htb-grid">
@@ -135,6 +135,7 @@ YS4B@Portfolio:~ $</pre>
 <div class="avatar-wrapper">
 <img alt="HackTheBox avatar" data-htb="avatar" loading="lazy" src="assets/hack-the-box.svg"/>
 </div>
+<a aria-label="Open my HackTheBox profile in a new tab" class="htb-avatar-link" data-i18n="htb.link.cta" data-i18n-aria-label="htb.link.aria" href="https://app.hackthebox.com/profile/1041901" rel="noopener" target="_blank">View my HackTheBox profile</a>
 </article>
 <article class="htb-card">
 <h3 data-i18n="htb.cards.rank.title">Current Rank</h3>
@@ -154,7 +155,7 @@ YS4B@Portfolio:~ $</pre>
 <article class="htb-card">
 <h3 data-i18n="htb.cards.users.title">Initial Footholds</h3>
 <p class="htb-value" data-htb="users-value" data-i18n="htb.cards.users.value">111</p>
-<p class="htb-meta" data-htb="users-meta" data-i18n="htb.cards.users.meta">User-level access trophies</p>
+<p class="htb-meta" data-htb="users-meta" data-i18n="htb.cards.users.meta">User-level access</p>
 </article>
 <article class="htb-card">
 <h3 data-i18n="htb.cards.challenges.title">Challenges Solved</h3>
@@ -185,46 +186,6 @@ YS4B@Portfolio:~ $</pre>
 <article class="pico-card">
 <h3 data-i18n="pico.hard.title">Hard</h3>
 <p class="pico-value" data-i18n="pico.hard.desc">3 challenges solved</p>
-</article>
-</div>
-</section>
-<section aria-labelledby="services-title" class="services" id="services">
-<div class="section-heading">
-<p class="eyebrow" data-i18n="services.eyebrow">Services</p>
-<h2 data-i18n="services.title" id="services-title">Where I deliver impact</h2>
-</div>
-<div class="service-grid">
-<article class="service-card">
-<h3 data-i18n="services.assessments.title">Offensive Security Assessments</h3>
-<ul>
-<li data-i18n="services.assessments.item1">Full-stack penetration tests across Web, network, and embedded targets</li>
-<li data-i18n="services.assessments.item2">Exploit development, privilege escalation, and lateral movement simulation</li>
-<li data-i18n="services.assessments.item3">Executive-ready reporting with actionable mitigation plans</li>
-</ul>
-</article>
-<article class="service-card">
-<h3 data-i18n="services.ics.title">Industrial Control System Resilience</h3>
-<ul>
-<li data-i18n="services.ics.item1">Forensic readiness for PLC and OT environments</li>
-<li data-i18n="services.ics.item2">Protocol analysis and anomaly detection for critical automation</li>
-<li data-i18n="services.ics.item3">Secure configuration baselines for mixed vendor ecosystems</li>
-</ul>
-</article>
-<article class="service-card">
-<h3 data-i18n="services.infrastructure.title">Secure Infrastructure Architecture</h3>
-<ul>
-<li data-i18n="services.infrastructure.item1">Design of multi-DMZ network segments with centralised logging</li>
-<li data-i18n="services.infrastructure.item2">Firewall policy hardening, VPN access control, and identity services</li>
-<li data-i18n="services.infrastructure.item3">Documentation and runbooks aligned to operational teams</li>
-</ul>
-</article>
-<article class="service-card">
-<h3 data-i18n="services.enablement.title">Security Engineering Enablement</h3>
-<ul>
-<li data-i18n="services.enablement.item1">Hands-on scripting in Python, Bash, and Go for automation</li>
-<li data-i18n="services.enablement.item2">Security champions coaching and project management support</li>
-<li data-i18n="services.enablement.item3">Tabletop exercises and blue-team knowledge transfer</li>
-</ul>
 </article>
 </div>
 </section>
@@ -259,6 +220,7 @@ YS4B@Portfolio:~ $</pre>
 <li data-i18n="experience.sodimas.item2">Tests d’intrusion locaux &amp; Web démontrant la compromission de services sensibles.</li>
 <li data-i18n="experience.sodimas.item3">Rapports détaillés et recommandations présentés aux équipes d’ingénierie.</li>
 <li data-i18n="experience.sodimas.item4">Gestion de projet : planification, suivi des tâches et présentations intermédiaires.</li>
+<li data-i18n="experience.sodimas.item5">Gestion de projet : planification, suivi des tâches et présentations intermédiaires.</li>
 </ul>
 <p class="timeline-meta" data-i18n="experience.sodimas.stack">Technologies : Linux, Nmap, Wireshark, Metasploit, SQLmap, Burp Suite, FFUF, Hydra, DirBuster, GoBuster, OWASP ZAP, Bash, Python</p>
 </div>
@@ -271,6 +233,7 @@ YS4B@Portfolio:~ $</pre>
 <p data-i18n="experience.ocp.summary">Stage d’initiation au développement Web pour la gestion des stages au sein de l’entreprise.</p>
 <ul>
 <li data-i18n="experience.ocp.item1">Conception et réalisation d’un portail de gestion des stages avec génération de rapports.</li>
+<li data-i18n="experience.ocp.item2">Conception et réalisation d’un portail de gestion des stages avec génération de rapports.</li>
 </ul>
 <p class="timeline-meta" data-i18n="experience.ocp.stack">Technologies : PHP, HTML, CSS, MySQL, TCPDF</p>
 </div>
@@ -285,48 +248,75 @@ YS4B@Portfolio:~ $</pre>
 <div class="project-grid">
 <article class="project-card">
 <h3 data-i18n="projects.dmz.title">Secure Multi-DMZ Infrastructure</h3>
-<p data-i18n="projects.dmz.summary">Designed and deployed a segmented network environment with security monitoring, directory services, and VPN access for ESISAR's cyber range.</p>
+<p data-i18n="projects.dmz.summary">Designed and deployed a segmented network architecture composed of multiple DMZs hosting distinct services (OpenLDAP, HTTP, SSH, OpenVPN, DNS, SMTP, centralized logging, etc.).</p>
 <dl>
 <div>
-<dt data-i18n="projects.dmz.focusLabel">Focus</dt>
-<dd data-i18n="projects.dmz.focus">Firewalling, identity, logging, and supervision</dd>
+<dt data-i18n="projects.dmz.goalLabel">Goal</dt>
+<dd data-i18n="projects.dmz.goal">Firewalling, identity, logging, and supervision</dd>
 </div>
 <div>
-<dt data-i18n="projects.dmz.stackLabel">Stack</dt>
-<dd data-i18n="projects.dmz.stack">iptables, OpenLDAP, OpenVPN, rsyslog</dd>
+<dt data-i18n="projects.dmz.acheivementsLabel"></dt>
+<dd data-i18n="projects.dmz.acheivements"></dd>
+</div>
+<div>
+<dt data-i18n="projects.dmz.stackLabel"></dt>
+<dd data-i18n="projects.dmz.stack"></dd>
 </div>
 </dl>
-<a class="text-link" data-i18n="projects.dmz.cta" href="#contact">Walk through the architecture</a>
 </article>
 <article class="project-card">
 <h3 data-i18n="projects.terrapin.title">Terrapin Attack Reproduction</h3>
 <p data-i18n="projects.terrapin.summary">Recreated CVE-2023-48795 against SSH to model cryptographic downgrade vectors and validate blue-team detection requirements.</p>
 <dl>
 <div>
-<dt data-i18n="projects.terrapin.outcomeLabel">Outcome</dt>
-<dd data-i18n="projects.terrapin.outcome">Delivered exploit tooling and mitigation guidance</dd>
+<dt data-i18n="projects.terrapin.goalLabel"></dt>
+<dd data-i18n="projects.terrapin.goal"></dd>
 </div>
 <div>
-<dt data-i18n="projects.terrapin.stackLabel">Stack</dt>
-<dd data-i18n="projects.terrapin.stack">Python, SSH protocol internals</dd>
+<dt data-i18n="projects.terrapin.acheivementsLabel"></dt>
+<dd data-i18n="projects.terrapin.acheivements"></dd>
+</div>
+<div>
+<dt data-i18n="projects.terrapin.stackLabel"></dt>
+<dd data-i18n="projects.terrapin.stack"></dd>
 </div>
 </dl>
-<a class="text-link" data-i18n="projects.terrapin.cta" href="#contact">Discuss findings</a>
 </article>
 <article class="project-card">
 <h3 data-i18n="projects.malware.title">Mobile Malware Reverse Engineering</h3>
 <p data-i18n="projects.malware.summary">Conducted static and dynamic analysis of obfuscated Android malware to expose malicious behaviours and payload delivery techniques.</p>
 <dl>
-<div>
-<dt data-i18n="projects.malware.focusLabel">Focus</dt>
-<dd data-i18n="projects.malware.focus">Reverse engineering, protocol inspection, threat intel</dd>
-</div>
-<div>
-<dt data-i18n="projects.malware.stackLabel">Stack</dt>
-<dd data-i18n="projects.malware.stack">ApkTool, Dex2Jar, JD-GUI, Burp Suite, Frida</dd>
-</div>
+	<div>
+		<dt data-i18n="projects.malware.goalLabel"></dt>
+		<dd data-i18n="projects.malware.goal"></dd>
+	</div>
+	<div>
+		<dt data-i18n="projects.malware.acheivementsLabel"></dt>
+		<dd data-i18n="projects.malware.acheivements"></dd>
+	</div>
+	<div>
+		<dt data-i18n="projects.malware.stackLabel"></dt>
+		<dd data-i18n="projects.malware.stack"></dd>
+	</div>
 </dl>
-<a class="text-link" data-i18n="projects.malware.cta" href="#contact">Request the analysis summary</a>
+</article>
+<article class="project-card">
+<h3 data-i18n="projects.dct.title"></h3>
+<p data-i18n="projects.dct.summary"></p>
+<dl>
+	<div>
+		<dt data-i18n="projects.dct.goalLabel"></dt>
+		<dd data-i18n="projects.dct.goal"></dd>
+	</div>
+	<div>
+		<dt data-i18n="projects.dct.acheivementsLabel"></dt>
+		<dd data-i18n="projects.dct.acheivements"></dd>
+	</div>
+	<div>
+		<dt data-i18n="projects.dct.stackLabel"></dt>
+		<dd data-i18n="projects.dct.stack"></dd>
+	</div>
+</dl>
 </article>
 </div>
 </section>
@@ -337,36 +327,28 @@ YS4B@Portfolio:~ $</pre>
 </div>
 <div class="skills-grid">
 <article class="skills-card">
-<h3 data-i18n="skills.offensive.title">Offensive Security</h3>
-<ul>
-<li data-i18n="skills.offensive.item1">Web, Linux, and Windows penetration testing</li>
-<li data-i18n="skills.offensive.item2">Vulnerability research &amp; exploit development</li>
-<li data-i18n="skills.offensive.item3">Capture-the-Flag methodology &amp; reporting</li>
-</ul>
+<h3 data-i18n="skills.offensive.title">Cybersécurité offensive</h3>
+<p data-i18n="skills.offensive.desc">Tests d’intrusion Web, systèmes et réseaux (Linux &amp; Windows), exploitation de vulnérabilités, énumération et escalade de privilèges.</p>
 </article>
 <article class="skills-card">
-<h3 data-i18n="skills.defensive.title">Defensive Architecture</h3>
-<ul>
-<li data-i18n="skills.defensive.item1">Firewalls, VPN, LDAP/Active Directory hardening</li>
-<li data-i18n="skills.defensive.item2">Security monitoring, IDS, and log correlation</li>
-<li data-i18n="skills.defensive.item3">Industrial protocol analysis &amp; anomaly detection</li>
-</ul>
+<h3 data-i18n="skills.defensive.title">Cybersécurité défensive &amp; forensique</h3>
+<p data-i18n="skills.defensive.desc">Analyse de traces numériques, investigation sur automates industriels, détection d’intrusions, journalisation et corrélation d’événements.</p>
 </article>
 <article class="skills-card">
-<h3 data-i18n="skills.programming.title">Programming &amp; Automation</h3>
-<ul>
-<li data-i18n="skills.programming.item1">Python, Bash, Go, Java, C, PHP, JavaScript</li>
-<li data-i18n="skills.programming.item2">Security tooling integration &amp; custom scripts</li>
-<li data-i18n="skills.programming.item3">Workflow automation for forensic pipelines</li>
-</ul>
+<h3 data-i18n="skills.networks.title">Réseaux &amp; systèmes</h3>
+<p data-i18n="skills.networks.desc">Conception d’infrastructures sécurisées (multi-DMZ), configuration de pare-feux, VPN, DNS, LDAP, supervision réseau.</p>
 </article>
 <article class="skills-card">
-<h3 data-i18n="skills.crypto.title">Cryptography &amp; Analysis</h3>
-<ul>
-<li data-i18n="skills.crypto.item1">PKI, secure communications, ECIES implementations</li>
-<li data-i18n="skills.crypto.item2">Reverse engineering and binary exploitation</li>
-<li data-i18n="skills.crypto.item3">Protocol dissections for OT &amp; IT environments</li>
-</ul>
+<h3 data-i18n="skills.analysis.title">Analyse &amp; rétro-ingénierie</h3>
+<p data-i18n="skills.analysis.desc">Analyse statique/dynamique des applications, reverse engineering des fichiers binaires, analyse et étude des protocoles informatiques et industriels.</p>
+</article>
+<article class="skills-card">
+<h3 data-i18n="skills.crypto.title">Cryptographie</h3>
+<p data-i18n="skills.crypto.desc">Conception et implémentation de méthodes de chiffrement sécurisées, compréhension des protocoles sécurisés (SSH, TLS, …).</p>
+</article>
+<article class="skills-card">
+<h3 data-i18n="skills.programming.title">Programmation &amp; automatisation</h3>
+<p data-i18n="skills.programming.desc">Développement d’outils et automatisation de tâches — langages : Python, Bash, C, Java, PHP, Go, PowerShell.</p>
 </article>
 </div>
 </section>
@@ -381,7 +363,7 @@ YS4B@Portfolio:~ $</pre>
 <div class="timeline-content">
 <h3 data-i18n="education.esisar.title">Grenoble INP ESISAR</h3>
 <span class="timeline-year">2023 -- 2025</span>
-<p class="timeline-meta" data-i18n="education.esisar.body">Double degree - Computer Science, Networks &amp; Cybersecurity</p>
+<p class="timeline-meta" data-i18n="education.esisar.body">Dual engineering degree - Computer Science, Networks &amp; Cybersecurity</p>
 </div>
 </li>
 <li>
@@ -416,26 +398,26 @@ YS4B@Portfolio:~ $</pre>
 <article class="certificate-slide" data-slide="">
 <div class="certificate-card">
 <a class="certificate-preview certificate-preview--image" href="https://labs.hackthebox.com/achievement/season/1041901/6" rel="noopener" target="_blank">
-<span class="sr-only" data-i18n="certificates.season6.link">Open Hack The Box Season 6 certificate in a new tab</span>
-<img alt="Hack The Box Season 6 certificate preview" class="certificate-preview__image" src="assets/season6.png"/>
+<span class="sr-only" data-i18n="certificates.season6.link">Open HackTheBox Season 6 certificate in a new tab</span>
+<img alt="HackTheBox Season 6 certificate preview" class="certificate-preview__image" src="assets/season6.png"/>
 </a>
 <div class="certificate-body">
-<h3 data-i18n="certificates.season6.title">Hack The Box — Season 6</h3>
+<h3 data-i18n="certificates.season6.title">HackTheBox — Season 6</h3>
 <p data-i18n="certificates.season6.summary">Platinum-tier season finish with a global rank of 632 out of 7,797 contestants.</p>
-<p class="certificate-note" data-i18n="certificates.note">Click the certificate above to view the official Hack The Box record.</p>
+<p class="certificate-note" data-i18n="certificates.note">Click the certificate above to view the official HackTheBox record.</p>
 </div>
 </div>
 </article>
 <article class="certificate-slide" data-slide="">
 <div class="certificate-card">
 <a class="certificate-preview certificate-preview--image" href="https://labs.hackthebox.com/achievement/season/1041901/5" rel="noopener" target="_blank">
-<span class="sr-only" data-i18n="certificates.season5.link">Open Hack The Box Season 5 certificate in a new tab</span>
-<img alt="Hack The Box Season 5 certificate preview" class="certificate-preview__image" src="assets/season5.png"/>
+<span class="sr-only" data-i18n="certificates.season5.link">Open HackTheBox Season 5 certificate in a new tab</span>
+<img alt="HackTheBox Season 5 certificate preview" class="certificate-preview__image" src="assets/season5.png"/>
 </a>
 <div class="certificate-body">
-<h3 data-i18n="certificates.season5.title">Hack The Box — Season 5</h3>
+<h3 data-i18n="certificates.season5.title">HackTheBox — Season 5</h3>
 <p data-i18n="certificates.season5.summary">Maintained Pro Hacker tier while shipping 22 validated compromise reports.</p>
-<p class="certificate-note" data-i18n="certificates.note">Click the certificate above to view the official Hack The Box record.</p>
+<p class="certificate-note" data-i18n="certificates.note">Click the certificate above to view the official HackTheBox record.</p>
 </div>
 </div>
 </article>
@@ -446,9 +428,9 @@ YS4B@Portfolio:~ $</pre>
 <img alt="TryHackMe certificate preview" class="certificate-preview__image" src="assets/THM-XHC7QFXBAA.png"/>
 </a>
 <div class="certificate-body">
-<h3 data-i18n="certificates.thm.title">TryHackMe — Offensive Pentesting</h3>
-<p data-i18n="certificates.thm.summary">Completed the Offensive Pentesting learning path covering advanced exploitation and post-exploitation tradecraft.</p>
-<p class="certificate-note" data-i18n="certificates.note">Click the certificate above to view the official Hack The Box record.</p>
+<h3 data-i18n="certificates.thm.title">TryHackMe — Advent of Cyber 2022</h3>
+<p data-i18n="certificates.thm.summary">Completed the Advent of Cyber 2022 track, covering basic exploitation and post-exploitation techniques.</p>
+<p class="certificate-note" data-i18n="certificates.note">Click the certificate above to view the official HackTheBox record.</p>
 </div>
 </div>
 </article>
@@ -534,7 +516,7 @@ YS4B@Portfolio:~ $</pre>
 </section>
 </main>
 <footer class="site-footer">
-<p data-i18n="footer.tagline">© <span id="year"></span> Yassine Sabir. Security without compromise.</p>
+<p data-i18n="footer.tagline">© <span id="year"></span> Yassine SABIR - All rights reserved.</p>
 <a class="back-to-top" data-i18n="footer.backToTop" href="#top">Back to top</a>
 </footer>
 <script src="config.js"></script>
