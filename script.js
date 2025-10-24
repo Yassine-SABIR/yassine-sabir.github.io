@@ -92,19 +92,19 @@
         htbElements.pointsValue.textContent = `${data.points} pts`;
       }
       if (htbElements.pointsMeta) {
-        htbElements.pointsMeta.textContent = `Classe ${data.ranking}e mondiale`;
+        htbElements.pointsMeta.textContent = `Classé ${data.ranking}e au niveau mondial`;
       }
       if (htbElements.systemsValue) {
         htbElements.systemsValue.textContent = String(data.systemOwns);
       }
       if (htbElements.systemsMeta) {
-        htbElements.systemsMeta.textContent = 'Compromission complete des cibles';
+        htbElements.systemsMeta.textContent = 'Compromission complète des cibles';
       }
       if (htbElements.usersValue) {
         htbElements.usersValue.textContent = String(data.userOwns);
       }
       if (htbElements.usersMeta) {
-        htbElements.usersMeta.textContent = 'Trophees niveau utilisateur';
+        htbElements.usersMeta.textContent = 'Accès utilisateur';
       }
     } else {
       if (htbElements.rankMeta) {
