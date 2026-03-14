@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>HTB Writeup - WingData</title>
+  <script>
+    (function () {
+      const THEME_STORAGE_KEY = 'portfolio-theme';
+      let theme = 'dark';
+      try {
+        const stored = localStorage.getItem(THEME_STORAGE_KEY);
+        if (stored === 'light' || stored === 'dark') {
+          theme = stored;
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          theme = 'light';
+        }
+      } catch (error) {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          theme = 'light';
+        }
+      }
+      document.documentElement.dataset.theme = theme;
+    })();
+  </script>
+  <link href="../../styles.css" rel="stylesheet" />
+  <link href="../writeups.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.css">
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/prism.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-xml-doc.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-go.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-cshtml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-javascript.min.js"></script>
+
+</head>
+
+<body class="challenge-body">
+  <header class="challenge-hero">
+    <div class="hero-inner">
+      <h1>WingData</h1>
+      <p class="challenge-tagline"></p>
+      <div class="challenge-meta">
+
+        <div class="challenge-icon-container">
+          <img alt="Facts Machine Icon" class="challenge-icon" src="./assets/machine_image.png" />
+        </div>
+        <div>
+          <span class="meta-label">Difficulty</span>
+          <span class="meta-value" , src="color:green">Easy</span>
+        </div>
+        <div>
+          <span class="meta-label">OS</span>
+          <span class="meta-value" , src="color:green">Linux</span>
+        </div>
+        <div>
+          <span class="meta-label">Platform</span>
+          <span class="meta-value" , src="color:green">HackTheBox</span>
+        </div>
+        <div>
+          <span class="meta-label">IP Address</span>
+          <span class="meta-value" , src="color:green">10.129.1.220</span>
+        </div>
+      </div>
+      <a class="btn ghost" href="../index.html">← All Writeups</a>
+    </div>
+  </header>
+
+  <main class="challenge-main">
+    <section aria-labelledby="overview-title" class="card section-overview">
+      <header class="section-heading">
+        <p class="eyebrow">Disclaimer </p>
+        <h2 id="overview-title">Disclaimer</h2>
+      </header>
+      <p>
+        <strong>Due to Hack The Box rules, we cannot share write-ups or solutions for active machines. Write-ups will be
+          published once the machines are retired.</strong>
+      </p>
+    </section>
+
+  </main>
+
+  <footer class="challenge-footer">
+    <small>© <span id="current-year"></span> Yassine SABIR · WingData</small>
+  </footer>
+
+  <script>
+    const currentYearEl = document.getElementById('current-year');
+    if (currentYearEl) {
+      currentYearEl.textContent = new Date().getFullYear();
+    }
+
+    document.querySelectorAll('[data-toggle]').forEach((toggle) => {
+      toggle.addEventListener('click', () => {
+        const targetId = toggle.getAttribute('data-toggle');
+        const target = document.getElementById(targetId);
+        if (!target) return;
+
+        const isHidden = target.hasAttribute('hidden');
+        if (isHidden) {
+          target.removeAttribute('hidden');
+        } else {
+          target.setAttribute('hidden', '');
+        }
+
+        if (toggle.classList.contains('hint-toggle')) {
+          toggle.classList.toggle('active', isHidden);
+        }
+
+        if (toggle.classList.contains('writeup-toggle')) {
+          toggle.textContent = isHidden ? 'Hide Writeup' : 'Reveal Writeup';
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
