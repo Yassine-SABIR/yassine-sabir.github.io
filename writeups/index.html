@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Writeups | Yassine SABIR</title>
+  <script>
+    (function () {
+      const THEME_STORAGE_KEY = 'portfolio-theme';
+      let theme = 'dark';
+      try {
+        const stored = localStorage.getItem(THEME_STORAGE_KEY);
+        if (stored === 'light' || stored === 'dark') {
+          theme = stored;
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          theme = 'light';
+        }
+      } catch (error) {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          theme = 'light';
+        }
+      }
+      document.documentElement.dataset.theme = theme;
+    })();
+  </script>
+  <link href="../styles.css" rel="stylesheet" />
+  <link href="./writeups.css" rel="stylesheet" />
+</head>
+
+<body class="challenge-body">
+  <header class="challenge-hero">
+    <div class="hero-inner">
+      <h1>Writeups</h1>
+      <p class="challenge-tagline"></p>
+      <a class="btn ghost" href="../index.html">← Back to Portfolio</a>
+    </div>
+  </header>
+
+  <main class="challenge-main">
+    <section aria-labelledby="collection-title" class="card">
+      <header class="section-heading">
+        <p class="eyebrow">Collection</p>
+        <h2 id="collection-title">Browse the reports</h2>
+      </header>
+      <div class="writeups-table" role="table" aria-label="Writeups list">
+        <div class="writeups-row writeups-head" role="row">
+          <span role="columnheader">Machine</span>
+          <span role="columnheader">Category</span>
+          <span role="columnheader">Difficulty</span>
+          <span role="columnheader">OS</span>
+        </div>
+
+        <a class="writeups-row" role="row" href="./WingData/index.html">
+          <span role="cell" class="machine-cell">
+            <img alt="WingData icon" src="WingData/assets/machine_image.png" />
+            <span>
+              <strong>WingData</strong>
+            </span>
+          </span>
+          <span role="cell">
+            Pentesting
+          </span>
+          <span role="cell">Easy</span>
+          <span role="cell">Linux</span>
+        </a>
+
+        <a class="writeups-row" role="row" href="./Pterodactyl/index.html">
+          <span role="cell" class="machine-cell">
+            <img alt="Pterodactyl icon" src="Pterodactyl/assets/machine_image.png" />
+            <span>
+              <strong>Pterodactyl</strong>
+            </span>
+          </span>
+          <span role="cell">
+            Pentesting
+          </span>
+          <span role="cell">Medium</span>
+          <span role="cell">Linux</span>
+        </a>
+
+        <a class="writeups-row" role="row" href="./Facts/index.html">
+          <span role="cell" class="machine-cell">
+            <img alt="Facts icon" src="Facts/assets/machine_image.png" />
+            <span>
+              <strong>Facts</strong>
+            </span>
+          </span>
+          <span role="cell">
+            Pentesting
+          </span>
+          <span role="cell">Easy</span>
+          <span role="cell">Linux</span>
+        </a>
+
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer">
+		<p data-i18n="footer.tagline">© <span id="year"></span> Yassine SABIR - All rights reserved.</p>
+		<a class="back-to-top" data-i18n="footer.backToTop" href="#top">Back to top</a>
+	</footer>
+</body>
+
+</html>
