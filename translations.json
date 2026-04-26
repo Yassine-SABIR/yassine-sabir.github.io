@@ -63,7 +63,7 @@
     "hero.strengths.badge.automation": "Analysis, Crypto & Automation",
     "hero.strengths.automation": "Static/dynamic analysis, reverse engineering, secure cryptography design, and tooling scripts (Python, Bash, C, Java, PHP, Go, PowerShell).",
     "htb.cards.challenges.title": "Challenges Solved",
-    "htb.cards.challenges.value": "132",
+    "htb.cards.challenges.value": "139",
     "htb.cards.challenges.meta": "HackTheBox challenges completed end-to-end",
     "htb.link.cta": "View my HackTheBox profile",
     "htb.link.aria": "Open my HackTheBox profile in a new tab",
@@ -383,7 +383,7 @@
     "certificates.thm.link": "Ouvrir la certification TryHackMe dans un nouvel onglet",
     "hero.stats.rankbadge": "12e en France",
     "htb.cards.challenges.title": "Challenges résolus",
-    "htb.cards.challenges.value": "132",
+    "htb.cards.challenges.value": "139",
     "htb.cards.challenges.meta": "Défis HackTheBox réalisés de bout en bout",
     "htb.link.cta": "Voir mon profil HackTheBox",
     "htb.link.aria": "Ouvrir mon profil HackTheBox dans un nouvel onglet"
