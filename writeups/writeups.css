@@ -1,3 +1,51 @@
+/* Reset */
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background-color: #0f172a;
+  color: #e5e7eb;
+}
+
+/* Center container */
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Table */
+table {
+  width: 100%;
+  max-width: 700px;
+  border-collapse: collapse;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Header (column names) */
+th {
+  padding: 12px;
+  text-align: center;
+  font-weight: 600;
+  color: #f9fafb;
+  border: 3px double rgba(255, 255, 255, 0.6);
+}
+
+/* Cells */
+td {
+  padding: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+}
+
+thead {
+  background: transparent;
+}
+
+
+
 :root {
   color-scheme: dark;
 }
@@ -26,7 +74,11 @@ a {
   color: inherit;
 }
 
+
+
 .challenge-hero {
+  position: relative;
+  z-index: 1;
   padding: clamp(2.25rem, 5vw, 4.5rem) clamp(1.25rem, 3vw, 3rem);
   background:
     radial-gradient(circle at 10% 10%, rgba(240, 58, 71, 0.18), transparent 55%),
@@ -97,6 +149,7 @@ a {
   overflow-y: auto;
 
   white-space: pre;
+  color: #e5e7eb;
 }
 
 /* Ensure inline Prism code blocks don't force horizontal page scroll */
@@ -138,6 +191,7 @@ a {
   white-space: normal;
   overflow-wrap: break-word;
   word-break: break-word;
+  color: #e5e7eb;
 }
 
 .challenge-meta {
@@ -149,6 +203,10 @@ a {
   border-radius: var(--radius);
   background: rgba(1, 1, 41, 0.55);
   border: 1px solid var(--border);
+}
+
+html[data-theme="light"] .challenge-meta {
+  background: rgba(255, 255, 255, 0.65);
 }
 
 .challenge-meta>* {
@@ -188,10 +246,6 @@ a {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border: 1px solid red;
-  border-radius: 500px;
-  -webkit-border-radius: 500px;
-  -moz-border-radius: 500px;
 }
 
 .card {
@@ -270,7 +324,7 @@ a {
   color: inherit;
   font-size: 1rem;
   font-weight: 600;
-  cursor: url('../assets/Cursor.png') 16 16, pointer;
+  cursor: pointer;
   transition: background 200ms ease, border-color 200ms ease;
 }
 
@@ -284,7 +338,7 @@ html[data-theme="light"] .hint-toggle {
 .hint-toggle:focus-visible {
   border-color: var(--accent-strong);
   background: rgba(181, 18, 47, 0.18);
-  cursor: url('../assets/Cursor.png') 16 16, pointer;
+  cursor: pointer;
 }
 
 .hint-toggle.active {
@@ -299,6 +353,10 @@ html[data-theme="light"] .hint-toggle {
   background: rgba(6, 6, 8, 0.35);
   border-radius: 0 12px 12px 12px;
   color: var(--text-muted);
+}
+
+html[data-theme="light"] .hint-content {
+  background: rgba(255, 255, 255, 0.65);
 }
 
 .writeup-note {
@@ -317,6 +375,10 @@ html[data-theme="light"] .hint-toggle {
   padding: 1.5rem;
   display: grid;
   gap: 1rem;
+}
+
+html[data-theme="light"] .writeup-body {
+  background: rgba(255, 255, 255, 0.65);
 }
 
 .writeup-body[hidden] {
@@ -446,4 +508,86 @@ html[data-theme="light"] .hint-toggle {
   .col-tag {
     justify-self: start;
   }
+}
+
+/* Light mode background color */
+
+html[data-theme="light"] code[class*="language-"],
+html[data-theme="light"] pre[class*="language-"] {
+  color: #334155;
+  background: none;
+  text-shadow: 0 1px rgba(255, 255, 255, 0.5);
+}
+
+html[data-theme="light"] :not(pre)>code[class*="language-"],
+html[data-theme="light"] pre[class*="language-"] {
+  background: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+html[data-theme="light"] .terminal,
+html[data-theme="light"] .note {
+  background: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #334155;
+}
+
+html[data-theme="light"] .token.comment,
+html[data-theme="light"] .token.prolog,
+html[data-theme="light"] .token.doctype,
+html[data-theme="light"] .token.cdata {
+  color: #64748b;
+}
+
+html[data-theme="light"] .token.punctuation {
+  color: #94a3b8;
+}
+
+html[data-theme="light"] .token.namespace {
+  opacity: .7;
+}
+
+html[data-theme="light"] .token.property,
+html[data-theme="light"] .token.tag,
+html[data-theme="light"] .token.boolean,
+html[data-theme="light"] .token.number,
+html[data-theme="light"] .token.constant,
+html[data-theme="light"] .token.symbol,
+html[data-theme="light"] .token.deleted {
+  color: #905;
+}
+
+html[data-theme="light"] .token.selector,
+html[data-theme="light"] .token.attr-name,
+html[data-theme="light"] .token.string,
+html[data-theme="light"] .token.char,
+html[data-theme="light"] .token.builtin,
+html[data-theme="light"] .token.inserted {
+  color: #690;
+}
+
+html[data-theme="light"] .token.operator,
+html[data-theme="light"] .token.entity,
+html[data-theme="light"] .token.url,
+html[data-theme="light"] .language-css .token.string,
+html[data-theme="light"] .style .token.string {
+  color: #9a6e3a;
+  background: hsla(0, 0%, 100%, .5);
+}
+
+html[data-theme="light"] .token.atrule,
+html[data-theme="light"] .token.attr-value,
+html[data-theme="light"] .token.keyword {
+  color: #07a;
+}
+
+html[data-theme="light"] .token.function,
+html[data-theme="light"] .token.class-name {
+  color: #dd4a68;
+}
+
+html[data-theme="light"] .token.regex,
+html[data-theme="light"] .token.important,
+html[data-theme="light"] .token.variable {
+  color: #e90;
 }
