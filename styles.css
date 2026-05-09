@@ -57,7 +57,7 @@ html[data-theme="light"] {
 
 html {
   scroll-behavior: smooth;
-  cursor: url('assets/Cursor.png') 16 16, auto;
+  cursor: auto;
 }
 
 
@@ -220,7 +220,7 @@ select,
 input,
 textarea,
 .contact-details li button {
-  cursor: url('assets/Cursor.png') 16 16, pointer;
+  cursor: pointer;
 }
 
 .btn:hover,
@@ -247,7 +247,7 @@ textarea:hover,
 textarea:focus,
 .contact-details li button:hover,
 .contact-details li button:focus {
-  cursor: url('assets/Cursor.png') 16 16, pointer;
+  cursor: pointer;
 }
 
 .lang-switcher {
@@ -1955,14 +1955,14 @@ section::after {
   color: var(--accent);
   font-weight: 600;
   text-shadow: none;
-  cursor: url('assets/Cursor.png') 16 16, pointer;
+  cursor: pointer;
 }
 
 .social-links a:hover,
 .social-links a:focus {
   color: var(--accent-strong);
   text-shadow: none;
-  cursor: url('assets/Cursor.png') 16 16, pointer;
+  cursor: pointer;
 }
 
 
