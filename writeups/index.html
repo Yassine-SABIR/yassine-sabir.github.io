@@ -29,7 +29,17 @@
 </head>
 
 <body class="challenge-body">
-  <header class="challenge-hero">
+    <header class="challenge-hero" style="position: relative;">
+    <div style="position: absolute; top: 1.5rem; right: 2rem; z-index: 10;">
+      <button aria-label="Switch to light mode" class="theme-toggle" data-theme-toggle="" type="button">
+        <span class="theme-track">
+          <span aria-hidden="true" class="theme-thumb">
+            <span class="theme-icon theme-icon-sun">☀</span>
+            <span class="theme-icon theme-icon-moon">☾</span>
+          </span>
+        </span>
+      </button>
+    </div>
     <div class="hero-inner">
       <h1>Writeups</h1>
       <p class="challenge-tagline"></p>
@@ -93,6 +103,48 @@
           <span role="cell">Linux</span>
         </a>
 
+        <a class="writeups-row" role="row" href="./Silentium/index.html">
+          <span role="cell" class="machine-cell">
+            <img alt="Silentium icon" src="Silentium/assets/machine_image.png" />
+            <span>
+              <strong>Silentium</strong>
+            </span>
+          </span>
+          <span role="cell">
+            Pentesting
+          </span>
+          <span role="cell">Easy</span>
+          <span role="cell">Linux</span>
+        </a>
+
+        <a class="writeups-row" role="row" href="./CCTV/index.html">
+          <span role="cell" class="machine-cell">
+            <img alt="CCTV icon" src="CCTV/assets/machine_image.png" />
+            <span>
+              <strong>CCTV</strong>
+            </span>
+          </span>
+          <span role="cell">
+            Pentesting
+          </span>
+          <span role="cell">Easy</span>
+          <span role="cell">Linux</span>
+        </a>
+
+        <a class="writeups-row" role="row" href="./Kobold/index.html">
+          <span role="cell" class="machine-cell">
+            <img alt="Kobold icon" src="Kobold/assets/machine_image.png" />
+            <span>
+              <strong>Kobold</strong>
+            </span>
+          </span>
+          <span role="cell">
+            Pentesting
+          </span>
+          <span role="cell">Easy</span>
+          <span role="cell">Linux</span>
+        </a>
+
       </div>
     </section>
   </main>
@@ -100,6 +152,25 @@
 		<p data-i18n="footer.tagline">© <span id="year"></span> Yassine SABIR - All rights reserved.</p>
 		<a class="back-to-top" data-i18n="footer.backToTop" href="#top">Back to top</a>
 	</footer>
+  <script>
+    const themeBtn = document.querySelector('[data-theme-toggle]');
+    if (themeBtn) {
+      const THEME_STORAGE_KEY = 'portfolio-theme';
+      const setThemeUI = () => {
+        const _theme = document.documentElement.dataset.theme || 'dark';
+        themeBtn.classList.toggle('is-light', _theme === 'light');
+        themeBtn.classList.toggle('is-dark', _theme !== 'light');
+        themeBtn.setAttribute('aria-label', _theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
+      };
+      setThemeUI();
+      themeBtn.addEventListener('click', () => {
+        const nextTheme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+        document.documentElement.dataset.theme = nextTheme;
+        localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+        setThemeUI();
+      });
+    }
+  </script>
 </body>
 
 </html>
