@@ -38,6 +38,16 @@
 
 <body class="challenge-body">
   <header class="challenge-hero">
+    <div style="position: absolute; top: 1.5rem; right: 2rem; z-index: 10;">
+      <button aria-label="Switch to light mode" class="theme-toggle" data-theme-toggle="" type="button">
+        <span class="theme-track">
+          <span aria-hidden="true" class="theme-thumb">
+            <span class="theme-icon theme-icon-sun">☀</span>
+            <span class="theme-icon theme-icon-moon">☾</span>
+          </span>
+        </span>
+      </button>
+    </div>
     <div class="hero-inner">
       <h1>CCTV</h1>
       <p class="challenge-tagline"></p>
@@ -48,19 +58,19 @@
         </div>
         <div>
           <span class="meta-label">Difficulty</span>
-          <span class="meta-value" , src="color:green">Easy</span>
+          <span class="meta-value" src="color:green">Easy</span>
         </div>
         <div>
           <span class="meta-label">OS</span>
-          <span class="meta-value" , src="color:green">Linux</span>
+          <span class="meta-value" src="color:green">Linux</span>
         </div>
         <div>
           <span class="meta-label">Platform</span>
-          <span class="meta-value" , src="color:green">HackTheBox</span>
+          <span class="meta-value" src="color:green">HackTheBox</span>
         </div>
         <div>
           <span class="meta-label">IP Address</span>
-          <span class="meta-value" , src="color:green">10.129.40.161</span>
+          <span class="meta-value" src="color:green">10.129.40.161</span>
         </div>
       </div>
       <a class="btn ghost" href="../index.html">← All Writeups</a>
@@ -91,6 +101,24 @@
       currentYearEl.textContent = new Date().getFullYear();
     }
 
+    
+    const themeBtn = document.querySelector('[data-theme-toggle]');
+    if (themeBtn) {
+      const THEME_STORAGE_KEY = 'portfolio-theme';
+      const setThemeUI = () => {
+        const _theme = document.documentElement.dataset.theme || 'dark';
+        themeBtn.classList.toggle('is-light', _theme === 'light');
+        themeBtn.classList.toggle('is-dark', _theme !== 'light');
+        themeBtn.setAttribute('aria-label', _theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
+      };
+      setThemeUI();
+      themeBtn.addEventListener('click', () => {
+        const nextTheme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+        document.documentElement.dataset.theme = nextTheme;
+        localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+        setThemeUI();
+      });
+    }
     document.querySelectorAll('[data-toggle]').forEach((toggle) => {
       toggle.addEventListener('click', () => {
         const targetId = toggle.getAttribute('data-toggle');
