@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>Writeups | Yassine SABIR</title>
+  <link href="../assets/Icone.png" rel="icon" type="image/png" />
   <script>
     (function () {
       const THEME_STORAGE_KEY = 'portfolio-theme';
@@ -29,7 +30,7 @@
 </head>
 
 <body class="challenge-body">
-    <header class="challenge-hero" style="position: relative;">
+  <header class="challenge-hero" style="position: relative;">
     <div style="position: absolute; top: 1.5rem; right: 2rem; z-index: 10;">
       <button aria-label="Switch to light mode" class="theme-toggle" data-theme-toggle="" type="button">
         <span class="theme-track">
@@ -49,151 +50,37 @@
 
   <main class="challenge-main">
     <section aria-labelledby="collection-title" class="card">
-      <header class="section-heading">
-        <p class="eyebrow">Collection</p>
-        <h2 id="collection-title">Browse the reports</h2>
+      <header class="section-heading"
+        style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: nowrap; width: 100%; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+          <p class="eyebrow" style="margin-bottom: 0.2rem;">Collection</p>
+          <h2 id="collection-title" style="margin: 0;">Browse the reports</h2>
+        </div>
+        <div class="search-container">
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="writeup-search" placeholder="Search writeups..." aria-label="Search writeups"
+            class="search-input" />
+        </div>
       </header>
       <div class="writeups-table" role="table" aria-label="Writeups list">
         <div class="writeups-row writeups-head" role="row">
-          <span role="columnheader">Machine</span>
-          <span role="columnheader">Category</span>
-          <span role="columnheader">Difficulty</span>
-          <span role="columnheader">OS</span>
+          <span role="columnheader" data-sort="name">Machine <span class="sort-icon"></span></span>
+          <span role="columnheader" data-sort="category">Category <span class="sort-icon"></span></span>
+          <span role="columnheader" data-sort="difficulty">Difficulty <span class="sort-icon"></span></span>
+          <span role="columnheader" data-sort="os">OS <span class="sort-icon"></span></span>
         </div>
-
-        <a class="writeups-row" role="row" href="./WingData/index.html">
-          <span role="cell" class="machine-cell">
-            <img alt="WingData icon" src="WingData/assets/machine_image.png" />
-            <span>
-              <strong>WingData</strong>
-            </span>
-          </span>
-          <span role="cell">
-            Pentesting
-          </span>
-          <span role="cell">Easy</span>
-          <span role="cell">Linux</span>
-        </a>
-
-        <a class="writeups-row" role="row" href="./Pterodactyl/index.html">
-          <span role="cell" class="machine-cell">
-            <img alt="Pterodactyl icon" src="Pterodactyl/assets/machine_image.png" />
-            <span>
-              <strong>Pterodactyl</strong>
-            </span>
-          </span>
-          <span role="cell">
-            Pentesting
-          </span>
-          <span role="cell">Medium</span>
-          <span role="cell">Linux</span>
-        </a>
-
-        <a class="writeups-row" role="row" href="./Facts/index.html">
-          <span role="cell" class="machine-cell">
-            <img alt="Facts icon" src="Facts/assets/machine_image.png" />
-            <span>
-              <strong>Facts</strong>
-            </span>
-          </span>
-          <span role="cell">
-            Pentesting
-          </span>
-          <span role="cell">Easy</span>
-          <span role="cell">Linux</span>
-        </a>
-
-        <a class="writeups-row" role="row" href="./Silentium/index.html">
-          <span role="cell" class="machine-cell">
-            <img alt="Silentium icon" src="Silentium/assets/machine_image.png" />
-            <span>
-              <strong>Silentium</strong>
-            </span>
-          </span>
-          <span role="cell">
-            Pentesting
-          </span>
-          <span role="cell">Easy</span>
-          <span role="cell">Linux</span>
-        </a>
-
-        <a class="writeups-row" role="row" href="./CCTV/index.html">
-          <span role="cell" class="machine-cell">
-            <img alt="CCTV icon" src="CCTV/assets/machine_image.png" />
-            <span>
-              <strong>CCTV</strong>
-            </span>
-          </span>
-          <span role="cell">
-            Pentesting
-          </span>
-          <span role="cell">Easy</span>
-          <span role="cell">Linux</span>
-        </a>
-
-        <a class="writeups-row" role="row" href="./DevArea/index.html">
-          <span role="cell" class="machine-cell">
-            <img alt="DevArea icon" src="DevArea/assets/machine_image.png" />
-            <span>
-              <strong>DevArea</strong>
-            </span>
-          </span>
-          <span role="cell">
-            Pentesting
-          </span>
-          <span role="cell">Medium</span>
-          <span role="cell">Linux</span>
-        </a>
-
-        <a class="writeups-row" role="row" href="./Interpreter/index.html">
-          <span role="cell" class="machine-cell">
-            <img alt="Interpreter icon" src="Interpreter/assets/machine_image.png" />
-            <span>
-              <strong>Interpreter</strong>
-            </span>
-          </span>
-          <span role="cell">
-            Pentesting
-          </span>
-          <span role="cell">Medium</span>
-          <span role="cell">Linux</span>
-        </a>
-
-        <a class="writeups-row" role="row" href="./Kobold/index.html">
-          <span role="cell" class="machine-cell">
-            <img alt="Kobold icon" src="Kobold/assets/machine_image.png" />
-            <span>
-              <strong>Kobold</strong>
-            </span>
-          </span>
-          <span role="cell">
-            Pentesting
-          </span>
-          <span role="cell">Easy</span>
-          <span role="cell">Linux</span>
-        </a>
-
-        <a class="writeups-row" role="row" href="./Helix/index.html">
-          <span role="cell" class="machine-cell">
-            <img alt="Helix icon" src="Helix/assets/machine_image.png" />
-            <span>
-              <strong>Helix</strong>
-            </span>
-          </span>
-          <span role="cell">
-            Pentesting
-          </span>
-          <span role="cell">Medium</span>
-          <span role="cell">Linux</span>
-        </a>
 
       </div>
     </section>
   </main>
   <footer class="site-footer">
-		<p data-i18n="footer.tagline">© <span id="year"></span> Yassine SABIR - All rights reserved.</p>
-		<a class="back-to-top" data-i18n="footer.backToTop" href="#top">Back to top</a>
-	</footer>
+    <p data-i18n="footer.tagline">© <span id="year"></span> Yassine SABIR - All rights reserved.</p>
+    <a class="back-to-top" data-i18n="footer.backToTop" href="#top">Back to top</a>
+  </footer>
   <script>
     const themeBtn = document.querySelector('[data-theme-toggle]');
     if (themeBtn) {
@@ -213,6 +100,7 @@
       });
     }
   </script>
+  <script src="./script.js"></script>
 </body>
 
 </html>

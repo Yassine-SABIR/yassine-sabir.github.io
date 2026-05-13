@@ -444,6 +444,52 @@ html[data-theme="light"] .writeup-body {
   font-weight: 600;
 }
 
+.writeups-head [role="columnheader"] {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: color 150ms ease;
+}
+
+.writeups-head [role="columnheader"]:hover {
+  color: var(--text);
+}
+
+.writeups-head .active {
+  color: var(--accent-strong);
+}
+
+.sort-icon {
+  font-size: 1.25em;
+  opacity: 0.9;
+  line-height: 1;
+  display: inline-block;
+  min-width: 1em;
+}
+
+.sort-icon::after {
+  content: '↑';
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.writeups-head [role="columnheader"]:not(.active):hover .sort-icon::after {
+  content: '↑';
+  opacity: 0.4;
+}
+
+.writeups-head [role="columnheader"].active.asc .sort-icon::after {
+  content: '↑';
+  opacity: 1;
+}
+
+.writeups-head [role="columnheader"].active.desc .sort-icon::after {
+  content: '↓';
+  opacity: 1;
+}
+
 .writeups-row:not(.writeups-head):hover {
   background: rgba(181, 18, 47, 0.08);
   border-color: rgba(181, 18, 47, 0.25);
@@ -590,4 +636,53 @@ html[data-theme="light"] .token.regex,
 html[data-theme="light"] .token.important,
 html[data-theme="light"] .token.variable {
   color: #e90;
+}
+
+/* Search input additions */
+.search-container {
+  display: flex;
+  margin-left: auto;
+  justify-content: flex-end;
+  position: relative;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+}
+
+html[data-theme="light"] .search-icon {
+  color: rgba(15, 23, 42, 0.4);
+}
+
+.search-input {
+  padding: 0.55rem 1rem 0.55rem 2.2rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(6, 6, 8, 0.4);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.95rem;
+  width: 100%;
+  max-width: 320px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-input:focus {
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 1px rgba(76, 201, 240, 0.2);
+}
+
+html[data-theme="light"] .search-input {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(148, 163, 184, 0.4);
+  color: #1f2430;
+}
+
+html[data-theme="light"] .search-input:focus {
+  border-color: var(--accent-strong);
 }

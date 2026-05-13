@@ -1,0 +1,83 @@
+[
+  {
+    "id": "WingData",
+    "name": "WingData",
+    "url": "./WingData/index.html",
+    "icon": "WingData/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Easy",
+    "os": "Linux"
+  },
+  {
+    "id": "Pterodactyl",
+    "name": "Pterodactyl",
+    "url": "./Pterodactyl/index.html",
+    "icon": "Pterodactyl/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Medium",
+    "os": "Linux"
+  },
+  {
+    "id": "Facts",
+    "name": "Facts",
+    "url": "./Facts/index.html",
+    "icon": "Facts/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Easy",
+    "os": "Linux"
+  },
+  {
+    "id": "Silentium",
+    "name": "Silentium",
+    "url": "./Silentium/index.html",
+    "icon": "Silentium/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Easy",
+    "os": "Linux"
+  },
+  {
+    "id": "CCTV",
+    "name": "CCTV",
+    "url": "./CCTV/index.html",
+    "icon": "CCTV/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Easy",
+    "os": "Linux"
+  },
+  {
+    "id": "DevArea",
+    "name": "DevArea",
+    "url": "./DevArea/index.html",
+    "icon": "DevArea/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Medium",
+    "os": "Linux"
+  },
+  {
+    "id": "Interpreter",
+    "name": "Interpreter",
+    "url": "./Interpreter/index.html",
+    "icon": "Interpreter/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Medium",
+    "os": "Linux"
+  },
+  {
+    "id": "Kobold",
+    "name": "Kobold",
+    "url": "./Kobold/index.html",
+    "icon": "Kobold/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Easy",
+    "os": "Linux"
+  },
+  {
+    "id": "Helix",
+    "name": "Helix",
+    "url": "./Helix/index.html",
+    "icon": "Helix/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Medium",
+    "os": "Linux"
+  }
+]
