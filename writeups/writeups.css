@@ -23,6 +23,7 @@ table {
   border: 2px solid rgba(255, 255, 255, 0.3);
   margin-left: auto;
   margin-right: auto;
+  table-layout: fixed;
 }
 
 /* Header (column names) */
@@ -32,18 +33,38 @@ th {
   font-weight: 600;
   color: #f9fafb;
   border: 3px double rgba(255, 255, 255, 0.6);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-all;
 }
 
 /* Cells */
 td {
   padding: 12px;
   border: 2px solid rgba(255, 255, 255, 0.25);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-all;
 }
 
 thead {
   background: transparent;
 }
 
+
+/* Light mode table borders */
+html[data-theme="light"] table {
+  border: 2px solid #000000;
+}
+
+html[data-theme="light"] th {
+  border: 3px double #000000;
+  color: #000000;
+}
+
+html[data-theme="light"] td {
+  border: 2px solid #000000;
+}
 
 
 :root {
