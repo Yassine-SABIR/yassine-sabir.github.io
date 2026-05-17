@@ -79,5 +79,14 @@
     "category": "Pentesting",
     "difficulty": "Medium",
     "os": "Linux"
+  },
+  {
+    "id": "SmartHire",
+    "name": "SmartHire",
+    "url": "./SmartHire/index.html",
+    "icon": "SmartHire/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Medium",
+    "os": "Linux"
   }
 ]
