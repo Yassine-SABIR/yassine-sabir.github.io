@@ -707,3 +707,91 @@ html[data-theme="light"] .search-input {
 html[data-theme="light"] .search-input:focus {
   border-color: var(--accent-strong);
 }
+
+/* Table of Contents */
+.writeup-toc {
+  display: none;
+}
+
+@media (min-width: 1200px) {
+  body.has-toc .writeup-toc {
+    display: block;
+    position: fixed;
+    top: max(6rem, 100px);
+    left: 2rem;
+    width: 260px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    background: var(--card-bg, #1a2035);
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+    border-radius: var(--radius, 12px);
+    padding: 1.5rem 1rem;
+    box-shadow: var(--shadow, 0 8px 32px rgba(0, 0, 0, 0.2));
+    z-index: 40;
+  }
+
+  body.has-toc .challenge-main {
+    max-width: min(1500px, 100% - 640px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  body.has-toc .challenge-hero .hero-inner {
+    max-width: min(1100px, 100% - 640px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.writeup-toc h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted, #9ca3af);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+}
+
+.writeup-toc ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.writeup-toc li {
+  line-height: 1.3;
+}
+
+.writeup-toc .toc-link {
+  text-decoration: none;
+  color: var(--text, #e5e7eb);
+  font-size: 0.9rem;
+  display: block;
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  border-left: 2px solid transparent;
+}
+
+.writeup-toc .toc-link:hover {
+  background: var(--bg-alt, rgba(255, 255, 255, 0.05));
+  color: var(--accent-strong, #60a5fa);
+}
+
+.writeup-toc .toc-link.active {
+  color: var(--accent-strong, #60a5fa);
+  background: var(--bg-alt, rgba(255, 255, 255, 0.05));
+  border-left-color: var(--accent-strong, #60a5fa);
+  font-weight: 600;
+}
+
+/* Hierarchy flattening */
+.writeup-toc .toc-item {
+  margin-left: 0;
+  font-size: 0.9rem;
+}
