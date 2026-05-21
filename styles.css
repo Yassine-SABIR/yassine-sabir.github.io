@@ -147,7 +147,8 @@ a {
   text-decoration: none;
 }
 
-a:hover, a:focus {
+a:hover,
+a:focus {
   color: var(--accent);
 }
 
@@ -362,6 +363,7 @@ textarea:focus,
     opacity: 0;
     transform: translateY(6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -958,9 +960,17 @@ section::after {
   display: inline-block;
 }
 
-.control-dot.close { background: #ff5858; }
-.control-dot.minimize { background: #ffc658; }
-.control-dot.maximize { background: #56ff8b; }
+.control-dot.close {
+  background: #ff5858;
+}
+
+.control-dot.minimize {
+  background: #ffc658;
+}
+
+.control-dot.maximize {
+  background: #56ff8b;
+}
 
 .terminal-title {
   font-family: 'Inter', var(--font-base);
@@ -996,7 +1006,7 @@ section::after {
   white-space: nowrap;
 }
 
-.terminal-line + .terminal-output {
+.terminal-line+.terminal-output {
   margin-top: 1.1rem;
 }
 
@@ -1053,8 +1063,16 @@ section::after {
 }
 
 @keyframes blink {
-  0%, 40% { opacity: 1; }
-  50%, 100% { opacity: 0; }
+
+  0%,
+  40% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
+  }
 }
 
 .terminal-card .noscript-output {
@@ -1135,11 +1153,13 @@ section::after {
 
 /* Writeups section */
 .writeups .project-grid {
-  grid-template-columns: repeat(auto-fit, minmax(260px, 300px));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   justify-content: center;
   justify-items: center;
   align-items: start;
-  gap: 1rem 1.25rem;
+  gap: 2rem 2.5rem;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 .writeups .project-card {
@@ -1148,7 +1168,7 @@ section::after {
   gap: 1rem;
   align-items: center;
   width: 100%;
-  max-width: 300px;
+  max-width: 100%;
   text-align: center;
 }
 
@@ -1425,7 +1445,7 @@ section::after {
   pointer-events: none;
 }
 
-.language-card > * {
+.language-card>* {
   position: relative;
   z-index: 1;
 }
@@ -1542,7 +1562,7 @@ section::after {
   pointer-events: none;
 }
 
-.certificate-card > * {
+.certificate-card>* {
   position: relative;
   z-index: 1;
 }
@@ -2191,16 +2211,27 @@ section::after {
 }
 
 @keyframes gridScroll {
-  0% { background-position: 0 0, 0 0, 0 0; }
-  100% { background-position: 160px 160px, 0 12px, 120px 0; }
+  0% {
+    background-position: 0 0, 0 0, 0 0;
+  }
+
+  100% {
+    background-position: 160px 160px, 0 12px, 120px 0;
+  }
 }
 
 @keyframes scanlines {
-  0% { background-position: 0 0, 50% 50%; }
-  100% { background-position: 0 12px, 50% 50%; }
+  0% {
+    background-position: 0 0, 50% 50%;
+  }
+
+  100% {
+    background-position: 0 12px, 50% 50%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   body::before,
   body::after {
     animation: none;
@@ -2442,7 +2473,7 @@ html[data-theme="light"] .terminal-header {
 
 html[data-theme="light"] .terminal-body {
   background: radial-gradient(circle at 35% 15%, rgba(148, 163, 184, 0.12), transparent 65%),
-              radial-gradient(circle at 90% 20%, rgba(240, 58, 71, 0.1), transparent 65%);
+    radial-gradient(circle at 90% 20%, rgba(240, 58, 71, 0.1), transparent 65%);
 }
 
 html[data-theme="light"] .prompt {
