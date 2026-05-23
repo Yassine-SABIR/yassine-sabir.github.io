@@ -88,5 +88,14 @@
     "category": "Pentesting",
     "difficulty": "Medium",
     "os": "Linux"
+  },
+  {
+    "id": "Reactor",
+    "name": "Reactor",
+    "url": "./Reactor/index.html",
+    "icon": "Reactor/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Easy",
+    "os": "Linux"
   }
 ]
