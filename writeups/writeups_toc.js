@@ -29,15 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Ensure unique IDs
     const idCount = {};
 
-    // Analyze headers to find min level for proper numbering foundation
-    let minLevel = 6;
-    headers.forEach(h => {
-        const lvl = parseInt(h.tagName.substring(1));
-        if (lvl < minLevel) minLevel = lvl;
-    });
-
-    const indexCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-
     headers.forEach((header, index) => {
         // Base ID generation from text content or existing valid ID
         let baseId = header.id;
@@ -63,26 +54,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        const level = parseInt(header.tagName.substring(1));
-
-        // Update numbering
-        for (let l = level + 1; l <= 5; l++) {
-            indexCounts[l] = 0;
-        }
-        indexCounts[level]++;
-
-        let numberParts = [];
-        for (let i = minLevel; i <= level; i++) {
-            numberParts.push(indexCounts[i]);
-        }
-        const numbering = numberParts.join('.') + '  ';
-
         const listItem = document.createElement('li');
         listItem.className = 'toc-item';
 
         const link = document.createElement('a');
         link.href = `#${finalId}`;
-        link.textContent = numbering + header.textContent;
+        link.textContent = header.textContent;
         link.className = 'toc-link';
 
         // Setup click listener for smooth scroll
