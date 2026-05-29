@@ -281,8 +281,7 @@ panel                   [Status: 200, Size: 1897, Words: 490, Lines: 36]
             </pre>
       </p>
 
-      <p>The <code>pearcmd.php</code> script allows command execution. A public PoC is available on GitHub <a
-          style="font-weight: bold;" href="#references">[1]</a>, but it
+      <p>The <code>pearcmd.php</code> script allows command execution. A public PoC is available on GitHub <a class="ref" href="#references">[1]</a>, but it
         requires slight adjustments to work in our case.</p>
       <p>To test the vulnerability, we use <code>pearcmd.php</code> to create a PHP script
         (<code>/tmp/payload.php</code>) that executes the <code>id</code> command on the target system.</p>
@@ -354,7 +353,7 @@ select username, password from users;
 pam-1.3.0-150000.6.66.1.x86_64</code>
         </pre>
       <p>This version is vulnerable to a privilege escalation flaw (<code>CVE-2025-6018 & CVE-2025-6019</code>). A
-        working exploit is publicly available on GitHub.<a style="font-weight: bold;" href="#references">[2]</a>.</p>
+        working exploit is publicly available on GitHub.<a class="ref" href="#references">[2]</a>.</p>
 
       <p>
         We execute the public exploit targeting the vulnerable PAM version.
@@ -396,8 +395,7 @@ uid=0(root) gid=0(root) groups=0(root),100(users)</code>
         <li>Upgrade Pterodactyl Panel to version <strong>1.11.11 or later</strong></li>
         <li>Disable <code>user_readenv</code> in PAM configurations (pam_env), especially in
           <code>/etc/pam.d/sshd</code>, auditing and limiting polkit actions granted to <code>'allow_active'</code>
-          users, and monitoring systems for unexpected loop device mounts under /tmp. <a style="font-weight: bold;"
-            href="#references">[3]</a>
+          users, and monitoring systems for unexpected loop device mounts under /tmp. <a class="ref" href="#references">[3]</a>
         </li>
       </ul>
     </section>

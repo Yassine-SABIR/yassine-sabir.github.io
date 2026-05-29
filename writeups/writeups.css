@@ -795,3 +795,15 @@ html[data-theme="light"] .search-input:focus {
   margin-left: 0;
   font-size: 0.9rem;
 }
+
+/* References */
+.ref {
+  font-size: 0.8em;
+  color: #1a73e8;      
+  text-decoration: none;
+  vertical-align: super; 
+}
+
+.ref:hover {
+  text-decoration: underline;
+}
