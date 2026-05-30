@@ -97,5 +97,14 @@
     "category": "Pentesting",
     "difficulty": "Easy",
     "os": "Linux"
+  },
+  {
+    "id": "DevHub",
+    "name": "DevHub",
+    "url": "./DevHub/index.html",
+    "icon": "DevHub/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Medium",
+    "os": "Linux"
   }
 ]
