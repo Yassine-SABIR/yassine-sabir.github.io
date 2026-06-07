@@ -106,5 +106,14 @@
     "category": "Pentesting",
     "difficulty": "Medium",
     "os": "Linux"
+  },
+  {
+    "id": "Connected",
+    "name": "Connected",
+    "url": "./Connected/index.html",
+    "icon": "Connected/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Easy",
+    "os": "Linux"
   }
 ]
