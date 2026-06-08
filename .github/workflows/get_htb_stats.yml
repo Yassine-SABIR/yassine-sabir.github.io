@@ -1,0 +1,30 @@
+name: Get Hack The Box Stats
+
+on:
+  schedule:
+    - cron: "0 * * * *"  # every hour
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Fetch HTB profile
+        run: |
+          curl -s https://labs.hackthebox.com/api/v4/profile/1041901 \
+          -o data/htb.json
+
+      - name: Commit update
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add data/htb.json
+          git diff --staged --quiet || git commit -m "Update HTB profile"
+          git push
