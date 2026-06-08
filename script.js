@@ -622,9 +622,6 @@
   };
 
   const initHackTheBoxStats = () => {
-    const endpoint = 'https://labs.hackthebox.com/api/v4/profile/1041901';
-    const proxied = `https://proxy.cors.sh/${endpoint}`;
-
     const applyProfile = (payload) => {
       const profile = payload && payload.profile;
       if (!profile) {
@@ -644,40 +641,20 @@
         data.ranking = profile.ranking;
       }
       if (typeof profile.system_owns === 'number' && Number.isFinite(profile.system_owns)) {
-      data.systemOwns = profile.system_owns;
-    }
-    if (typeof profile.user_owns === 'number' && Number.isFinite(profile.user_owns)) {
-      data.userOwns = profile.user_owns;
-    }
+        data.systemOwns = profile.system_owns;
+      }
+      if (typeof profile.user_owns === 'number' && Number.isFinite(profile.user_owns)) {
+        data.userOwns = profile.user_owns;
+      }
       renderHackTheBox();
     };
 
-    const headers = {};
-    if (typeof config.corsProxyKey === 'string' && config.corsProxyKey.trim()) {
-      headers['x-cors-api-key'] = config.corsProxyKey.trim();
-    }
-
-    if (!headers['x-cors-api-key']) {
-      console.warn('CORS proxy key missing; HackTheBox stats not refreshed.');
-      return;
-    }
-
-    fetch(proxied, {
-      headers,
-      credentials: 'omit'
-    })
+    fetch('data/htb.json', { cache: 'no-store' })
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
-        return response.text();
-      })
-      .then((text) => {
-        try {
-          return JSON.parse(text);
-        } catch (error) {
-          throw new Error('Invalid JSON from proxy');
-        }
+        return response.json();
       })
       .then(applyProfile)
       .catch((error) => {
@@ -797,7 +774,7 @@
 
   const bootstrap = () => {
     loadTranslations()
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => {
         initThemeToggle();
         initLanguageToggle();
