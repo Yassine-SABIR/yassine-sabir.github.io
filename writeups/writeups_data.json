@@ -115,5 +115,23 @@
     "category": "Pentesting",
     "difficulty": "Easy",
     "os": "Linux"
+  },
+  {
+    "id": "Telly",
+    "name": "Telly",
+    "url": "./Telly/index.html",
+    "icon": "Telly/assets/machine_image.png",
+    "category": "SOC",
+    "difficulty": "Very Easy",
+    "os": ""
+  },
+  {
+    "id": "Vantage",
+    "name": "Vantage",
+    "url": "./Vantage/index.html",
+    "icon": "Vantage/assets/machine_image.png",
+    "category": "SOC",
+    "difficulty": "Very Easy",
+    "os": ""
   }
 ]
