@@ -130,7 +130,7 @@
     "name": "Vantage",
     "url": "./Vantage/index.html",
     "icon": "Vantage/assets/machine_image.png",
-    "category": "SOC",
+    "category": "DFIR",
     "difficulty": "Very Easy",
     "os": ""
   }
