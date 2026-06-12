@@ -805,3 +805,11 @@ html[data-theme="light"] .search-input:focus {
 .ref:hover {
   text-decoration: underline;
 }
+
+.update {
+  background: rgba(214, 69, 95, 0.18);
+  color: var(--danger);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(214, 69, 95, 0.3);
+}
