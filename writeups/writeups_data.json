@@ -117,6 +117,15 @@
     "os": "Linux"
   },
   {
+    "id": "Checkpoint",
+    "name": "Checkpoint",
+    "url": "./Checkpoint/index.html",
+    "icon": "Checkpoint/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Medium",
+    "os": "Windows"
+  },
+  {
     "id": "Telly",
     "name": "Telly",
     "url": "./Telly/index.html",
