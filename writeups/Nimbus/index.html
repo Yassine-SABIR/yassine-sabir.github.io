@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>HTB Writeup - Nimbus</title>
+  <link href="../../assets/Icone.png" rel="icon" type="image/png" />
+  <script>
+    (function () {
+      const THEME_STORAGE_KEY = 'portfolio-theme';
+      let theme = 'dark';
+      try {
+        const stored = localStorage.getItem(THEME_STORAGE_KEY);
+        if (stored === 'light' || stored === 'dark') {
+          theme = stored;
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          theme = 'light';
+        }
+      } catch (error) {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          theme = 'light';
+        }
+      }
+      document.documentElement.dataset.theme = theme;
+    })();
+  </script>
+  <link href="../../styles.css" rel="stylesheet" />
+  <link href="../writeups.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.css">
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/prism.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-go.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-cshtml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-javascript.min.js"></script>
+
+</head>
+
+<body class="challenge-body">
+  <header class="challenge-hero">
+    <div style="position: absolute; top: 1.5rem; right: 2rem; z-index: 10;">
+      <button aria-label="Switch to light mode" class="theme-toggle" data-theme-toggle="" type="button">
+        <span class="theme-track">
+          <span aria-hidden="true" class="theme-thumb">
+            <span class="theme-icon theme-icon-sun">☀</span>
+            <span class="theme-icon theme-icon-moon">☾</span>
+          </span>
+        </span>
+      </button>
+    </div>
+    <div class="hero-inner">
+      <h1>Nimbus</h1>
+      <p class="challenge-tagline"></p>
+      <div class="challenge-meta">
+
+        <div class="challenge-icon-container">
+          <img alt="Facts Machine Icon" class="challenge-icon" src="./assets/machine_image.png" />
+        </div>
+        <div>
+          <span class="meta-label">Difficulty</span>
+          <span class="meta-value" src="color:green">Hard</span>
+        </div>
+        <div>
+          <span class="meta-label">OS</span>
+          <span class="meta-value" src="color:green">Linux</span>
+        </div>
+        <div>
+          <span class="meta-label">Platform</span>
+          <span class="meta-value" src="color:green">HackTheBox</span>
+        </div>
+        <div>
+          <span class="meta-label">IP Address</span>
+          <span class="meta-value" src="color:green">10.129.173.138</span>
+        </div>
+      </div>
+      <a class="btn ghost" href="../index.html">← All Writeups</a>
+    </div>
+  </header>
+
+  <main class="challenge-main">
+    <section aria-labelledby="overview-title" class="card section-overview">
+      <header class="section-heading">
+        <p class="eyebrow">Disclaimer </p>
+        <h2 id="overview-title">Disclaimer</h2>
+      </header>
+      <p>
+        <strong>Due to Hack The Box rules, we cannot share write-ups or solutions for active machines. Write-ups will be
+          published once the machines are retired.</strong>
+      </p>
+    </section>
+
+    <section aria-labelledby="overview-title" class="card section-overview">
+      <header class="section-heading">
+        <p class="eyebrow">Proof of Completion</p>
+        <h2 id="overview-title">Proof of Completion</h2>
+      </header>
+      <img src="./assets/machine_solved.png" width="100%"/>
+    </section>
+
+  </main>
+
+  <footer class="challenge-footer">
+    <small>© <span id="current-year"></span> Yassine SABIR · Nimbus</small>
+  </footer>
+
+  <script>
+    const currentYearEl = document.getElementById('current-year');
+    if (currentYearEl) {
+      currentYearEl.textContent = new Date().getFullYear();
+    }
+
+    
+    const themeBtn = document.querySelector('[data-theme-toggle]');
+    if (themeBtn) {
+      const THEME_STORAGE_KEY = 'portfolio-theme';
+      const setThemeUI = () => {
+        const _theme = document.documentElement.dataset.theme || 'dark';
+        themeBtn.classList.toggle('is-light', _theme === 'light');
+        themeBtn.classList.toggle('is-dark', _theme !== 'light');
+        themeBtn.setAttribute('aria-label', _theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
+      };
+      setThemeUI();
+      themeBtn.addEventListener('click', () => {
+        const nextTheme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+        document.documentElement.dataset.theme = nextTheme;
+        localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+        setThemeUI();
+      });
+    }
+    document.querySelectorAll('[data-toggle]').forEach((toggle) => {
+      toggle.addEventListener('click', () => {
+        const targetId = toggle.getAttribute('data-toggle');
+        const target = document.getElementById(targetId);
+        if (!target) return;
+
+        const isHidden = target.hasAttribute('hidden');
+        if (isHidden) {
+          target.removeAttribute('hidden');
+        } else {
+          target.setAttribute('hidden', '');
+        }
+
+        if (toggle.classList.contains('hint-toggle')) {
+          toggle.classList.toggle('active', isHidden);
+        }
+
+        if (toggle.classList.contains('writeup-toggle')) {
+          toggle.textContent = isHidden ? 'Hide Writeup' : 'Reveal Writeup';
+        }
+      });
+    });
+  </script>
+  <script src="../writeups_toc.js"></script>
+</body>
+
+</html>

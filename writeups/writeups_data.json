@@ -126,6 +126,15 @@
     "os": "Windows"
   },
   {
+    "id": "Nimbus",
+    "name": "Nimbus",
+    "url": "./Nimbus/index.html",
+    "icon": "Nimbus/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Hard",
+    "os": "Linux"
+  },
+  {
     "id": "Telly",
     "name": "Telly",
     "url": "./Telly/index.html",
