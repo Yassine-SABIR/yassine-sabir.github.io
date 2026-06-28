@@ -135,6 +135,15 @@
     "os": "Linux"
   },
   {
+    "id": "Enigma",
+    "name": "Enigma",
+    "url": "./Enigma/index.html",
+    "icon": "Enigma/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Easy",
+    "os": "Linux"
+  },
+  {
     "id": "Telly",
     "name": "Telly",
     "url": "./Telly/index.html",
