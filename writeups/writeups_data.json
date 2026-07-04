@@ -144,6 +144,15 @@
     "os": "Linux"
   },
   {
+    "id": "MakeSense",
+    "name": "MakeSense",
+    "url": "./MakeSense/index.html",
+    "icon": "MakeSense/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Medium",
+    "os": "Linux"
+  },
+  {
     "id": "Telly",
     "name": "Telly",
     "url": "./Telly/index.html",
