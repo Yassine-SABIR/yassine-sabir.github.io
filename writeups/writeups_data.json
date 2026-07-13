@@ -153,6 +153,15 @@
     "os": "Linux"
   },
   {
+    "id": "Paperwork",
+    "name": "Paperwork",
+    "url": "./Paperwork/index.html",
+    "icon": "Paperwork/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Easy",
+    "os": "Linux"
+  },
+  {
     "id": "Telly",
     "name": "Telly",
     "url": "./Telly/index.html",
@@ -167,6 +176,15 @@
     "url": "./Vantage/index.html",
     "icon": "Vantage/assets/machine_image.png",
     "category": "DFIR",
+    "difficulty": "Very Easy",
+    "os": ""
+  },
+  {
+    "id": "PhantomRing",
+    "name": "PhantomRing",
+    "url": "./PhantomRing/index.html",
+    "icon": "PhantomRing/assets/machine_image.png",
+    "category": "Malware Analysis",
     "difficulty": "Very Easy",
     "os": ""
   }
