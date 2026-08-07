@@ -205,5 +205,14 @@
     "category": "Malware Analysis",
     "difficulty": "Very Easy",
     "os": ""
+  },
+  {
+    "id": "WhaleSecret",
+    "name": "WhaleSecret",
+    "url": "./WhaleSecret/index.html",
+    "icon": "WhaleSecret/assets/machine_image.png",
+    "category": "DFIR",
+    "difficulty": "Medium",
+    "os": ""
   }
 ]
