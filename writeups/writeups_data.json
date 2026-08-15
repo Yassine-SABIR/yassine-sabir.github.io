@@ -180,6 +180,15 @@
     "os": "Linux"
   },
   {
+    "id": "DanglingTree",
+    "name": "DanglingTree",
+    "url": "./DanglingTree/index.html",
+    "icon": "DanglingTree/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Medium",
+    "os": "Windows"
+  },
+  {
     "id": "Telly",
     "name": "Telly",
     "url": "./Telly/index.html",
