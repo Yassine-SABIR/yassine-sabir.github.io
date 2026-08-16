@@ -69,9 +69,24 @@
       <div class="writeups-table" role="table" aria-label="Writeups list">
         <div class="writeups-row writeups-head" role="row">
           <span role="columnheader" data-sort="name">Machine <span class="sort-icon"></span></span>
-          <span role="columnheader" data-sort="category">Category <span class="sort-icon"></span></span>
-          <span role="columnheader" data-sort="difficulty">Difficulty <span class="sort-icon"></span></span>
-          <span role="columnheader" data-sort="os">OS <span class="sort-icon"></span></span>
+          <span role="columnheader" data-sort="category" class="col-header-container">
+            <span class="col-header-text"><span class="col-title">Category</span><span class="col-filter-vals" id="filter-val-category"></span></span>
+            <span class="sort-icon"></span>
+            <span class="filter-icon" onclick="toggleFilter(event, 'category')">▼</span>
+            <div class="filter-menu" id="filter-menu-category" style="display: none;"></div>
+          </span>
+          <span role="columnheader" data-sort="difficulty" class="col-header-container">
+            <span class="col-header-text"><span class="col-title">Difficulty</span><span class="col-filter-vals" id="filter-val-difficulty"></span></span>
+            <span class="sort-icon"></span>
+            <span class="filter-icon" onclick="toggleFilter(event, 'difficulty')">▼</span>
+            <div class="filter-menu" id="filter-menu-difficulty" style="display: none;"></div>
+          </span>
+          <span role="columnheader" data-sort="os" class="col-header-container">
+            <span class="col-header-text"><span class="col-title">OS</span><span class="col-filter-vals" id="filter-val-os"></span></span>
+            <span class="sort-icon"></span>
+            <span class="filter-icon" onclick="toggleFilter(event, 'os')">▼</span>
+            <div class="filter-menu" id="filter-menu-os" style="display: none;"></div>
+          </span>
         </div>
 
       </div>
