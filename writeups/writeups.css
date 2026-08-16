@@ -275,6 +275,7 @@ html[data-theme="light"] .challenge-meta {
   border-radius: var(--radius);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
+  min-width: 0;
 }
 
 .section-heading {
@@ -800,9 +801,9 @@ html[data-theme="light"] .search-input:focus {
 /* References */
 .ref {
   font-size: 0.8em;
-  color: #1a73e8;      
+  color: #1a73e8;
   text-decoration: none;
-  vertical-align: super; 
+  vertical-align: super;
 }
 
 .ref:hover {
@@ -872,7 +873,8 @@ html[data-theme="light"] .filter-menu label:hover {
 }
 
 .col-header-container {
-  min-width: 0; /* allows text truncation in flex container */
+  min-width: 0;
+  /* allows text truncation in flex container */
   position: relative;
 }
 
