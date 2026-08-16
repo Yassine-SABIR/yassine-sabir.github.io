@@ -85,6 +85,15 @@ function renderTable() {
     `;
         tableContainer.appendChild(row);
     });
+
+    const countEl = document.getElementById('writeup-count');
+    if (countEl) {
+        if (filtered.length === writeupsData.length) {
+            countEl.textContent = `${filtered.length} writeups`;
+        } else {
+            countEl.textContent = `Showing ${filtered.length} of ${writeupsData.length}`;
+        }
+    }
 }
 
 // Event listeners

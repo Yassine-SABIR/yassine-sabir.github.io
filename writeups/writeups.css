@@ -905,3 +905,68 @@ html[data-theme="light"] .filter-menu label:hover {
 .col-filter-vals:empty {
   display: none;
 }
+
+.writeup-count-badge {
+  font-size: 0.85rem;
+  font-weight: normal;
+  text-transform: none;
+  letter-spacing: normal;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+html[data-theme="light"] .writeup-count-badge {
+  background: rgba(181, 18, 47, 0.08);
+  color: #d62f45;
+}
+
+.writeups-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.search-count-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+@media (max-width: 680px) {
+  .writeups-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-count-wrapper {
+    align-self: flex-end;
+    margin-left: 0;
+    width: 100%;
+    max-width: 240px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  
+  .search-count-wrapper .search-container {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .search-count-wrapper .search-input {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .search-count-wrapper .writeup-count-badge {
+    width: 100%;
+    justify-content: center;
+  }
+}
