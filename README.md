@@ -6,7 +6,7 @@
 
 ![Preview](assets/og/home.png)
 
-Bilingual (EN/FR) portfolio of a cybersecurity engineer — offensive security, industrial forensics and secure infrastructure — with **25 Hack The Box / CTF writeups**.
+Bilingual (EN/FR) portfolio of a cybersecurity engineer — offensive security, industrial forensics and secure infrastructure — with **28 Hack The Box / CTF writeups**.
 
 ## Highlights
 
