@@ -39,8 +39,7 @@ assets/               images, CV, i18n, HTB data, og/ previews, vendor/
 
 | Task | How |
 |---|---|
-| Add a writeup | Add `writeups/<Name>/index.html` + entry in `writeups/writeups_data.json`, then run `python3 tools/seo.py` |
-| Change domain | Edit `SITE_URL` in `tools/seo.py`, rerun it |
+| Add a writeup | Add `writeups/<Name>/index.html` + entry in `writeups/writeups_data.json`|
 | Enable the PGP channel | Export the public key to `assets/keys/sabir.yassine.asc` and pin its fingerprint in `js/config.js` (`gpg --show-keys --with-fingerprint`) |
 | HTB stats | Synced hourly by `.github/workflows/get_htb_stats.yml` (validated before commit). Run it now: *Actions → Sync Hack The Box stats → Run workflow*. Optional secret `HTB_TOKEN` if the API requires auth |
 
