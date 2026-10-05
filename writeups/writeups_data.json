@@ -207,6 +207,15 @@
     "os": "Linux"
   },
   {
+    "id": "Touch",
+    "name": "Touch",
+    "url": "./Touch/index.html",
+    "icon": "Touch/assets/machine_image.png",
+    "category": "Pentesting",
+    "difficulty": "Easy",
+    "os": "Windows"
+  },
+  {
     "id": "Telly",
     "name": "Telly",
     "url": "./Telly/index.html",
