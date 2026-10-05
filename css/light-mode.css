@@ -1,0 +1,82 @@
+/* Shared light theme for the portfolio landing page. */
+/* Light tokens are defined in variables.css. */
+
+html[data-theme="light"] body {
+  background:
+    radial-gradient(circle at 4% 4%, rgba(109, 159, 0, .13), transparent 28rem),
+    radial-gradient(circle at 96% 92%, rgba(71, 118, 0, .1), transparent 30rem),
+    var(--bg);
+}
+
+html[data-theme="light"] body::before {
+  background-image: linear-gradient(rgba(28, 67, 48, .07) 1px, transparent 1px), linear-gradient(90deg, rgba(28, 67, 48, .07) 1px, transparent 1px);
+}
+
+html[data-theme="light"] .cyber-rain-canvas { opacity: .16; }
+html[data-theme="light"] .site-header {
+  background: rgba(255, 255, 255, .82);
+  box-shadow: 0 12px 30px rgba(35, 73, 56, .1);
+}
+html[data-theme="light"] .site-nav a,
+html[data-theme="light"] .language-toggle,
+html[data-theme="light"] .menu-toggle,
+html[data-theme="light"] /* Explicit light-theme text contrast for hard-coded dark-theme declarations. */
+html[data-theme="light"] h3,
+html[data-theme="light"] h4,
+html[data-theme="light"] .hero-profile-stat strong,
+html[data-theme="light"] .hero-stat-copy > span:last-child,
+html[data-theme="light"] .timeline-card h3,
+html[data-theme="light"] .project-card h3,
+html[data-theme="light"] .skill-card h3,
+html[data-theme="light"] .pico-stat-card strong,
+html[data-theme="light"] .htb-stat-card strong {
+  color: var(--text);
+}
+
+html[data-theme="light"] .hero-stat-kicker,
+html[data-theme="light"] .hero-stat-chip,
+html[data-theme="light"] .education-level,
+html[data-theme="light"] .timeline-meta,
+html[data-theme="light"] .stack,
+html[data-theme="light"] .project-card dt,
+html[data-theme="light"] .eyebrow,
+html[data-theme="light"] .section-eyebrow,
+html[data-theme="light"] .form-field label {
+  color: var(--primary-light) !important;
+}
+
+html[data-theme="light"] .hero-description,
+html[data-theme="light"] .section-intro,
+html[data-theme="light"] .contact-copy > p,
+html[data-theme="light"] .contact-item small,
+html[data-theme="light"] .strength-row p,
+html[data-theme="light"] .terminal-body,
+html[data-theme="light"] .timeline-card > p,
+html[data-theme="light"] .timeline-card li,
+html[data-theme="light"] .project-card > p,
+html[data-theme="light"] .project-card dd,
+html[data-theme="light"] .pico-stat-card span,
+html[data-theme="light"] .htb-stat-card span {
+  color: var(--muted) !important;
+}
+
+html[data-theme="light"] .strengths-kicker,
+html[data-theme="light"] .strength-label,
+html[data-theme="light"] .slider-button,
+html[data-theme="light"] .language-toggle,
+html[data-theme="light"] .menu-toggle {
+  color: #fff;
+}
+
+html[data-theme="light"] .form-field input,
+html[data-theme="light"] .form-field textarea {
+  color: var(--text);
+  background: rgba(255,255,255,.9);
+  border-color: var(--border-strong);
+}
+html[data-theme="light"] .form-field input::placeholder,
+html[data-theme="light"] .form-field textarea::placeholder { color: #718178; }
+html[data-theme="light"] .prompt { color: var(--primary-light); }
+html[data-theme="light"] .hero-profile-stat strong { text-shadow: none; }
+html[data-theme="light"] .footer-nav a:hover { color: var(--primary-light); }
+html[data-theme="light"] .timeline-card .stack { background: rgba(255,255,255,.7); border-color: rgba(34,75,55,.14); }

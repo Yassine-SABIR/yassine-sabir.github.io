@@ -1,0 +1,3 @@
+OpenPGP.js 6.3.2 (npm: openpgp@6.3.2, dist/openpgp.min.mjs) — LGPL-3.0, see LICENSE.
+sha256 7d3285efa6dfedbb34a136d8b5ad21c28fb973269df0b2818dcb74dfb40b59d9
+Upstream: https://github.com/openpgpjs/openpgpjs

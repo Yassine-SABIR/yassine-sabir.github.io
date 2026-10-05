@@ -1,0 +1,106 @@
+:root {
+  --bg: #0b111b;
+  --bg-deep: #060b12;
+  --surface: rgba(20, 30, 45, 0.82);
+  --surface-solid: #141e2c;
+  --surface-soft: rgba(164, 177, 205, 0.08);
+  --text: #f5f7fa;
+  --muted: #a4b1cd;
+  --primary: #9fef00;
+  --primary-light: #b8ff3d;
+  --secondary: #7cb305;
+  --turquoise: #9fef00;
+  --pink: #d6ff76;
+  --border: rgba(164, 177, 205, 0.22);
+  --border-strong: rgba(159, 239, 0, 0.48);
+  --glow: rgba(159, 239, 0, 0.26);
+  --success: #9fef00;
+  --danger: #ff5b72;
+  --warning: #ffb547;
+  --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+  --radius-sm: 12px;
+  --radius-md: 22px;
+  --radius-lg: 32px;
+  --container: 1180px;
+  --header-height: 82px;
+  --font: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  /* Ink used for text sitting on the lime accent. */
+  --on-primary: #0a1404;
+  --code-bg: #070d16;
+  --code-head: rgba(255, 255, 255, .03);
+  --code-text: #d7e0ef;
+
+  /* Difficulty scale shared by the writeups list and reports. */
+  --diff-very-easy: #4fd1c5;
+  --diff-easy: #9fef00;
+  --diff-medium: #ffb547;
+  --diff-hard: #ff5b72;
+  --diff-insane: #c084fc;
+
+  /* Semantic design tokens (shared by portfolio + writeups) */
+  --color-background: var(--bg);
+  --color-surface: var(--surface);
+  --color-text-primary: var(--text);
+  --color-text-secondary: #c9d2e3;
+  --color-text-muted: var(--muted);
+  --color-accent: var(--primary-light);
+  --color-border: var(--border);
+  /* Heading gradient: starts on the primary text tone, ends on the accent. */
+  --color-gradient-start: #f5f7fa;
+  --color-gradient-mid: #b8ff3d;
+  --color-gradient-end: #d6ff76;
+  --gradient-heading: linear-gradient(105deg, var(--color-gradient-start) 12%, var(--color-gradient-mid) 58%, var(--color-gradient-end));
+  --gradient-accent: linear-gradient(100deg, var(--color-gradient-mid), var(--color-gradient-end) 55%, var(--primary));
+  --duration-fast: .2s;
+  --duration-base: .45s;
+  --duration-reveal: .7s;
+  --reveal-distance: 22px;
+
+  /* Aliases kept for the writeup pages, which historically used these names. */
+  --text-muted: var(--muted);
+  --accent-strong: var(--primary-light);
+  --accent-soft: rgba(159, 239, 0, .12);
+  --card-bg: var(--surface);
+  --bg-alt: rgba(255, 255, 255, .04);
+  --radius: var(--radius-sm);
+  --font-base: var(--font);
+}
+
+/* Light theme tokens live here so every page (portfolio and writeups) gets them. */
+html[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6faf8;
+  --bg-deep: #eaf2ee;
+  --surface: rgba(255, 255, 255, .9);
+  --surface-solid: #ffffff;
+  --surface-soft: rgba(25, 55, 42, .07);
+  --text: #14231d;
+  --muted: #52655d;
+  --primary: #6d9f00;
+  --primary-light: #4e7f00;
+  --secondary: #557d00;
+  --turquoise: #477600;
+  --pink: #648c00;
+  --border: rgba(30, 63, 48, .2);
+  --border-strong: rgba(88, 137, 0, .55);
+  --glow: rgba(109, 159, 0, .2);
+  --shadow: 0 24px 70px rgba(37, 70, 55, .14);
+  --on-primary: #ffffff;
+  --code-bg: #f3f8f4;
+  --code-head: rgba(30, 63, 48, .05);
+  --code-text: #1f3328;
+  --diff-very-easy: #0f8a7e;
+  --diff-easy: #4e7f00;
+  --diff-medium: #b86e00;
+  --diff-hard: #c62a42;
+  --diff-insane: #8b3fd1;
+  --accent-soft: rgba(109, 159, 0, .12);
+  --bg-alt: rgba(30, 63, 48, .05);
+  --color-text-secondary: #2f4339;
+  /* Light gradient: deep ink → dark olive. Every stop stays ≥ 4.5:1 on #f6faf8. */
+  --color-gradient-start: #14231d;
+  --color-gradient-mid: #3f6b00;
+  --color-gradient-end: #2f5a12;
+}

@@ -1,0 +1,316 @@
+/* ==========================================================================
+   Shared design system — loaded LAST on every page (portfolio + writeups).
+   Components here must look identical everywhere; pages never restyle them.
+   ========================================================================== */
+
+/* --- Theme toggle (single implementation) ------------------------------ */
+.theme-toggle {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--surface-soft);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-out), border-color var(--duration-fast), background var(--duration-fast), box-shadow var(--duration-fast);
+}
+.theme-toggle:hover { transform: translateY(-2px); border-color: var(--border-strong); background: var(--glow); box-shadow: 0 0 22px var(--glow); }
+.theme-toggle:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+.theme-toggle-icon {
+  grid-area: 1 / 1;
+  font-size: 1.05rem;
+  line-height: 1;
+  transition: opacity var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out);
+}
+.theme-toggle-sun { opacity: 0; transform: rotate(-30deg) scale(.7); }
+.theme-toggle-moon { opacity: 1; transform: none; }
+html[data-theme="light"] .theme-toggle-sun { opacity: 1; transform: none; }
+html[data-theme="light"] .theme-toggle-moon { opacity: 0; transform: rotate(30deg) scale(.7); }
+html[data-theme="light"] .theme-toggle { background: rgba(255, 255, 255, .85); }
+@media (max-width: 900px) { .theme-toggle { width: 40px; height: 40px; } }
+
+/* Floating placement used by pages without the portfolio header. */
+.page-theme-control {
+  position: absolute;
+  top: 1.5rem;
+  right: max(1.25rem, calc((100% - var(--layout-width, 1120px)) / 2));
+  z-index: 5;
+}
+@media (max-width: 700px) { .page-theme-control { top: 1rem; right: 1rem; } }
+
+/* --- Gradient headings ------------------------------------------------- */
+/* Every gradient heading uses the theme's gradient tokens, so light mode gets
+   its own readable ink→olive gradient instead of inheriting white stops. */
+.section-heading h2,
+.contact-copy h2,
+.challenge-hero h1 {
+  background: var(--gradient-heading);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero h1 { color: var(--color-text-primary); }
+.hero h1 > span,
+.hero-underline-word {
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero-underline-word::after { border-bottom-color: var(--color-accent); }
+/* Writeup report cards use solid headings (long titles read better flat). */
+.card .section-heading h2 { background: none; color: var(--color-text-primary); }
+
+/* --- Eyebrows ---------------------------------------------------------- */
+/* Numbered = top-level chapters (01–07); unnumbered = sub-panels (HTB,
+   picoCTF, Languages) and terminal sections (Contact). Numbers are authored
+   in HTML (.eyebrow-index), never generated, so translations can't shift them. */
+.eyebrow,
+.writeups-hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  margin: 0 0 .5rem;
+  color: var(--color-accent);
+  font: 800 .74rem/1 var(--font);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+.eyebrow::before,
+.writeups-hero-kicker::before {
+  content: "";
+  flex: none;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-accent);
+  box-shadow: 0 0 10px var(--glow);
+}
+.eyebrow span,
+.writeups-hero-kicker span { color: inherit; }
+.eyebrow .eyebrow-index,
+.writeups-hero-kicker .eyebrow-index {
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+/* --- Text roles -------------------------------------------------------- */
+.section-intro,
+.hero-description,
+.challenge-tagline { color: var(--color-text-muted); }
+html[data-theme="light"] .section-intro,
+html[data-theme="light"] .hero-description { color: var(--color-text-secondary) !important; }
+
+/* --- Scroll reveal (shared) -------------------------------------------- */
+:where([data-reveal]) {
+  opacity: 0;
+  transform: translate3d(0, var(--reveal-distance), 0);
+  transition: opacity var(--duration-reveal) var(--ease-out) var(--delay, 0ms), transform var(--duration-reveal) var(--ease-out) var(--delay, 0ms);
+}
+:where([data-reveal].is-visible) { opacity: 1; transform: none; }
+/* Subtle parallax driven by a single rAF-throttled CSS variable. */
+[data-parallax] { transform: translate3d(0, calc(var(--parallax, 0) * 1px), 0); will-change: transform; }
+
+html { scroll-behavior: smooth; scroll-padding-top: 96px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
+  [data-parallax] { transform: none !important; }
+  .theme-toggle-icon { transition: none; }
+}
+
+/* --- Light theme surfaces (one rule for every card family) ------------- */
+/* Several card families declare dark gradients with higher specificity in
+   style.css; this maps all of them onto the light surface token. */
+html[data-theme="light"] :is(.skills-grid .skill-card, .pico-core, .pico-stat-card, .certificate-card, .languages-section .language-card, .contact-item, .project-card, .xp-card, .rank-card, .htb-profile, .htb-metric, .coverage, .writeup-tile, .contact-form, .terminal) {
+  background: linear-gradient(145deg, rgba(255, 255, 255, .96), rgba(237, 245, 240, .92));
+  border-color: var(--color-border);
+  box-shadow: 0 18px 44px rgba(34, 75, 55, .1);
+}
+html[data-theme="light"] .site-footer { background: linear-gradient(180deg, #edf4ef, #e3ede6); }
+html[data-theme="light"] :is(.skill-card h3, .pico-stat-card strong, .certificate-copy h3, .language-card h3, .contact-item strong) { color: var(--color-text-primary); }
+html[data-theme="light"] :is(.skill-card > p, .certificate-copy p, .language-card p, .terminal-body, .terminal-out) { color: var(--color-text-secondary) !important; }
+html[data-theme="light"] :is(.coverage-title, .rank-card-kicker, .htb-metric-label) { color: var(--color-accent); }
+html[data-theme="light"] .terminal-input { color: var(--color-text-primary); }
+html[data-theme="light"] .btn.ghost:hover { color: var(--color-accent); }
+html[data-theme="light"] .skills-grid .skill-card::before { opacity: .25; }
+
+/* ==========================================================================
+   Responsive system
+   Breakpoints (max-width): 1279 laptop · 1023 tablet landscape · 767 tablet
+   portrait/large mobile · 479 mobile · 359 very small. Everything else is fluid.
+   ========================================================================== */
+:root { --gutter: clamp(1rem, 4vw, 2.5rem); --tap: 44px; }
+img, svg, video, canvas { max-width: 100%; }
+img { height: auto; }
+
+/* Decorative glows stay inside their card instead of widening the page. */
+.htb-profile, .pico-core, .rank-card, .htb-metric, .coverage { overflow: clip; }
+.hero-strengths::before, .hero-strengths::after { max-width: 100%; }
+main, .site-footer { overflow-x: clip; }
+
+/* Slide-in reveals use a viewport-relative distance so they never start off-screen. */
+.xp-item[data-side="right"][data-reveal] .xp-card { transform: translateX(min(32px, 3vw)); }
+.xp-item[data-side="left"][data-reveal] .xp-card { transform: translateX(max(-32px, -3vw)); }
+.xp-item.is-visible .xp-card { transform: none; }
+
+/* Touch targets */
+@media (pointer: coarse) {
+  .menu-toggle, .language-toggle, .theme-toggle { min-width: var(--tap); min-height: var(--tap); }
+  .hero-socials a, .footer-socials a { min-width: var(--tap); min-height: var(--tap); display: inline-grid; place-items: center; }
+  .copy-button, .project-details, .writeups-grid-filters button, .view-toggle button, .filter-icon, .sort-button, .code-copy, .toc-toggle, .pgp-button, .footer-nav a { min-height: var(--tap); }
+  .footer-nav a { display: inline-flex; align-items: center; }
+}
+
+/* Header: fits down to 320px */
+@media (max-width: 479px) {
+  .site-header { gap: .5rem; padding: .45rem .45rem .45rem .9rem; width: calc(100% - 20px); }
+  .logo { font-size: .95rem; }
+  .header-actions { gap: .3rem; }
+  .menu-toggle, .language-toggle, .theme-toggle { width: 40px; height: 40px; min-width: 40px; }
+}
+@media (max-width: 359px) {
+  .logo { font-size: .85rem; letter-spacing: -.04em; }
+  .site-nav.is-open::after { content: none; }
+}
+
+/* Writeups toolbar + grid */
+.writeups-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); }
+.writeup-tile-body strong { white-space: normal; overflow-wrap: anywhere; }
+@media (max-width: 767px) {
+  .writeups-toolbar { flex-direction: column; align-items: stretch; }
+  .writeups-total { justify-content: center; }
+  .view-toggle { align-self: center; }
+  .writeups-grid-filters { flex-wrap: nowrap; overflow-x: auto; padding-bottom: .4rem; margin-inline: calc(var(--gutter) * -0.5); padding-inline: calc(var(--gutter) * .5); scroll-snap-type: x proximity; scrollbar-width: none; mask-image: linear-gradient(90deg, transparent, #000 12px, #000 calc(100% - 12px), transparent); }
+  .writeups-grid-filters::-webkit-scrollbar { display: none; }
+  .writeups-grid-filters button { flex: none; scroll-snap-align: start; }
+  .writeups-hint { text-align: center; padding-inline: 1rem; }
+}
+
+/* Long technical strings never widen a page */
+:is(.card, .xp-card, .project-card, .coverage, .floating-text) :is(p, li, dd, h2, h3, a) { overflow-wrap: anywhere; }
+.table-wrap, .code-block pre { max-width: 100%; overflow-x: auto; }
+
+/* Reduce decorative cost on small screens */
+@media (max-width: 767px) {
+  .htb-profile-glow, .pico-core-glow, .skills-grid .skill-card::before { animation: none; }
+  :root { --reveal-distance: 14px; }
+}
+
+/* Hero title: solid primary-ink words + one gradient accent word, per theme.
+   text-fill-color must follow the token too, or WebKit keeps a stale colour. */
+.hero h1 .hero-title-primary {
+  background: none;
+  color: var(--color-text-primary);
+  -webkit-text-fill-color: currentColor;
+}
+.hero h1 .hero-underline-word { -webkit-text-fill-color: transparent; }
+
+/* Secondary buttons: outline style, ink follows the theme. */
+.btn-secondary { color: var(--color-text-primary); }
+.btn-secondary:hover { color: var(--color-accent); }
+
+/* --- Secure contact channel ------------------------------------------- */
+/* Colour follows verified security properties only: green = verified pin,
+   neutral = valid but unpinned, amber/red = unavailable / invalid / mismatch. */
+.secure-channel { display: grid; gap: .9rem; }
+.secure-option { display: grid; gap: .55rem; padding-top: .85rem; border-top: 1px dashed var(--color-border); }
+.secure-option-title { display: flex; align-items: center; gap: .5rem; margin: 0; color: var(--color-text-primary); font-size: .9rem; }
+.secure-option-title i { color: var(--color-accent); }
+.secure-channel-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem .9rem; margin-top: .2rem; }
+button.pgp-button { cursor: pointer; }
+.pgp-button[disabled] { opacity: .45; cursor: not-allowed; transform: none; }
+.pgp-button--ghost { background: transparent; border-color: var(--border-strong); color: var(--color-accent); }
+.pgp-button--ghost:hover { background: var(--accent-soft); border-color: var(--color-accent); color: var(--color-accent); }
+.pgp-link { display: inline-flex; align-items: center; gap: .4rem; color: var(--color-text-muted); font-size: .78rem; text-decoration: underline; text-underline-offset: 3px; }
+.pgp-link:hover { color: var(--color-accent); }
+.pgp-link i { font-size: .65rem; }
+
+.pgp-status {
+  --tone: var(--color-text-muted);
+  display: flex; align-items: flex-start; gap: .55rem; margin: 0; padding: .6rem .75rem;
+  border: 1px solid color-mix(in srgb, var(--tone) 40%, transparent);
+  border-radius: 10px; background: color-mix(in srgb, var(--tone) 9%, transparent);
+  color: var(--color-text-primary); font-size: .8rem; line-height: 1.5;
+}
+.pgp-status i { margin-top: .2rem; color: var(--tone); }
+.pgp-status[data-state="verified"] { --tone: var(--success); }
+.pgp-status[data-state="unpinned"] { --tone: #4fc3f7; }
+.pgp-status[data-state="unavailable"] { --tone: var(--warning); }
+.pgp-status[data-state="invalid"],
+.pgp-status[data-state="mismatch"] { --tone: var(--danger); font-weight: 600; }
+html[data-theme="light"] .pgp-status[data-state="unpinned"] { --tone: #0b6b8f; }
+html[data-theme="light"] .pgp-status[data-state="unavailable"] { --tone: #a35d00; }
+
+.pgp-details { display: grid; gap: .45rem; margin: 0; }
+.pgp-details[hidden] { display: none; }
+.pgp-details > div { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: .5rem; align-items: baseline; }
+.pgp-details dt { color: var(--color-text-muted); font: 700 .62rem/1.4 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; }
+.pgp-details dd { margin: 0; color: var(--color-text-primary); font: 500 .78rem/1.45 var(--font-mono); overflow-wrap: anywhere; }
+.pgp-fingerprint dd { display: flex; align-items: flex-start; gap: .4rem; }
+.pgp-fingerprint code { font: 700 .82rem/1.5 var(--font-mono); letter-spacing: .03em; word-spacing: .1em; user-select: all; }
+.pgp-copy { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--color-border); border-radius: 8px; background: none; color: var(--color-text-muted); cursor: pointer; }
+.pgp-copy:hover, .pgp-copy[data-copied] { border-color: var(--border-strong); color: var(--color-accent); }
+.pgp-trust-note { margin: 0; color: var(--color-text-muted); font-size: .72rem; line-height: 1.5; }
+.secure-channel[data-pgp-state="mismatch"] .pgp-trust-note,
+.secure-channel[data-pgp-state="invalid"] .pgp-trust-note { display: none; }
+@media (max-width: 479px) { .pgp-details > div { grid-template-columns: 1fr; gap: .1rem; } }
+
+.pgp-encrypt-field { gap: .35rem; }
+.pgp-encrypt-toggle { display: flex; align-items: flex-start; gap: .6rem; color: var(--color-text-primary); font-size: .84rem; font-weight: 600; cursor: pointer; }
+.pgp-encrypt-toggle input { flex: none; width: 18px; height: 18px; margin-top: .1rem; accent-color: var(--primary); }
+.pgp-encrypt-toggle:has(input:disabled) { opacity: .55; cursor: not-allowed; }
+.pgp-encrypt-help { margin: 0; color: var(--color-text-muted); font-size: .74rem; line-height: 1.5; }
+@media (pointer: coarse) { .pgp-copy { width: 44px; height: 44px; } }
+
+/* Secure channel as a full-width panel under the contact grid. */
+.secure-channel--wide {
+  width: min(100%, 1120px);
+  margin: clamp(2rem, 4vw, 3rem) auto 0;
+  padding: clamp(1.1rem, 3vw, 1.75rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(1.25rem, 4vw, 3rem);
+  align-items: start;
+  text-align: left;
+}
+.secure-channel--wide .secure-channel-title { grid-column: 1 / -1; font-size: 1rem; }
+.secure-channel--wide .secure-option { align-content: start; }
+@media (max-width: 767px) {
+  .secure-channel--wide { grid-template-columns: minmax(0, 1fr); }
+}
+.pgp-fingerprint code { overflow-wrap: normal; word-break: keep-all; }
+
+/* Header: Writeups + language stay reachable at every width.
+   ≤1100px the Writeups CTA collapses to an icon button with its count badge. */
+@media (max-width: 1100px) {
+  .header-cta { display: inline-grid; place-items: center; position: relative; width: 42px; height: 42px; padding: 0; gap: 0; border-radius: 50%; }
+  .header-cta-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .header-cta-count { position: absolute; top: -5px; right: -6px; min-width: 1.25rem; height: 1.15rem; padding: 0 .25rem; border: 2px solid var(--bg); background: var(--color-text-primary); color: var(--bg); font-size: .6rem; }
+  .header-cta::after { display: none; }
+}
+@media (max-width: 479px) {
+  .header-cta { width: 38px; height: 38px; }
+  .site-header .menu-toggle, .site-header .language-toggle, .site-header .theme-toggle { width: 38px; height: 38px; min-width: 38px; min-height: 38px; }
+  .header-actions { gap: .25rem; }
+}
+@media (max-width: 359px) {
+  .logo { font-size: .8rem; }
+  .site-header { padding-left: .7rem; gap: .35rem; }
+}
+
+/* HTB: fifth metric (challenges) spans the full row of the 2-col grid. */
+.htb-metrics > .htb-metric:nth-child(5) { grid-column: 1 / -1; grid-template-columns: auto 1fr; grid-template-areas: "icon value" "icon label" "icon note"; align-items: center; column-gap: 1rem; min-height: 0; }
+.htb-metrics > .htb-metric:nth-child(5) .htb-metric-icon { grid-area: icon; }
+.htb-metric-note { color: var(--color-text-muted); font-size: .76rem; line-height: 1.45; }
+/* Very narrow phones: stack the name on two lines so all four header actions fit. */
+@media (max-width: 379px) {
+  .site-header .logo { flex: 0 1 auto; min-width: 0; max-width: none; line-height: 1.05; }
+  .site-header .logo span { display: block; }
+}
