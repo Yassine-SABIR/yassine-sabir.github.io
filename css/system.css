@@ -290,9 +290,9 @@ html[data-theme="light"] .pgp-status[data-state="unavailable"] { --tone: #a35d00
 /* Header: Writeups + language stay reachable at every width.
    ≤1100px the Writeups CTA collapses to an icon button with its count badge. */
 @media (max-width: 1100px) {
-  .header-cta { display: inline-grid; place-items: center; position: relative; width: 42px; height: 42px; padding: 0; gap: 0; border-radius: 50%; }
+  .header-cta { display: inline-grid; place-items: center; position: relative; width: 42px; height: 42px; padding: 0; gap: 0; border-radius: 50%; overflow: visible; }
   .header-cta-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .header-cta-count { position: absolute; top: -5px; right: -6px; min-width: 1.25rem; height: 1.15rem; padding: 0 .25rem; border: 2px solid var(--bg); background: var(--color-text-primary); color: var(--bg); font-size: .6rem; }
+  .header-cta-count { position: absolute; top: -5px; right: -6px; min-width: 1.25rem; height: 1.15rem; padding: 0 .25rem; border: 2px solid var(--bg); background: var(--color-text-primary); color: var(--bg); font-size: .6rem; z-index: 2; }
   .header-cta::after { display: none; }
 }
 @media (max-width: 479px) {
@@ -314,3 +314,50 @@ html[data-theme="light"] .pgp-status[data-state="unavailable"] { --tone: #a35d00
   .site-header .logo { flex: 0 1 auto; min-width: 0; max-width: none; line-height: 1.05; }
   .site-header .logo span { display: block; }
 }
+
+/* Experience timeline: perfectly center the vertical spine through the logo nodes on tablet & mobile */
+@media (max-width: 900px) {
+  .xp-timeline {
+    --spine: 60px;
+  }
+  .xp-timeline .xp-spine {
+    left: 30px !important;
+    transform: translateX(-50%) !important;
+  }
+  .xp-item[data-side] .xp-marker {
+    grid-column: 1 !important;
+    display: grid !important;
+    place-items: center !important;
+    width: var(--spine) !important;
+    box-sizing: border-box !important;
+  }
+  #experience .xp-marker .xp-logo,
+  .xp-marker .xp-logo {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .xp-timeline {
+    --spine: 48px;
+  }
+  .xp-timeline .xp-spine {
+    left: 24px !important;
+    transform: translateX(-50%) !important;
+  }
+  .xp-item[data-side] .xp-marker {
+    width: var(--spine) !important;
+  }
+  #experience .xp-marker .xp-logo,
+  .xp-marker .xp-logo {
+    width: 46px !important;
+    height: 46px !important;
+  }
+}
+

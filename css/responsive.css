@@ -43,6 +43,9 @@
   .contact-copy h2,.contact-copy > p:not(.eyebrow) { margin-inline:auto; }
   .contact-list { width:min(100%,430px);margin-inline:auto;text-align:left; }
   .contact-form { margin-inline:auto; }
+  .about-copy-column .section-heading { align-items:center; text-align:center; }
+  .about-copy-column .section-heading > div { margin-inline:auto; }
+  .about-copy-column .eyebrow { justify-content:center; }
   .about-copy { text-align:center; }
   .project-grid,.skills-grid { grid-template-columns:repeat(2,1fr); }
   .certificate-card { grid-template-columns:1fr; }
@@ -232,8 +235,47 @@
 }
 
 @media (max-width: 900px) {
-  #skills .section-heading {
+  #skills .section-heading,
+  #htb .section-heading,
+  #picoctf .section-heading,
+  #experience .section-heading,
+  #projects .section-heading,
+  #education .section-heading,
+  #writeups .section-heading {
     width: 100%;
+    align-items: center;
+    text-align: center;
+  }
+
+  #skills .section-heading > div,
+  #htb .section-heading > div,
+  #picoctf .section-heading > div,
+  #experience .section-heading > div,
+  #projects .section-heading > div,
+  #education .section-heading > div,
+  #writeups .section-heading > div {
+    margin-inline: auto;
+  }
+
+  #skills .eyebrow,
+  #htb .eyebrow,
+  #picoctf .eyebrow,
+  #experience .eyebrow,
+  #projects .eyebrow,
+  #education .eyebrow,
+  #writeups .eyebrow {
+    justify-content: center;
+  }
+
+  #skills .section-intro,
+  #htb .section-intro,
+  #picoctf .section-intro,
+  #experience .section-intro,
+  #projects .section-intro,
+  #education .section-intro,
+  #writeups .section-intro {
+    text-align: center;
+    margin-inline: auto;
   }
 
   #skills .skills-grid {
@@ -699,7 +741,7 @@
     font-size: clamp(.78rem, 2.5vw, .95rem);
   }
 
-  #experience .timeline-dot,
+  #experience .timeline:not(.xp-timeline) .timeline-dot,
   #experience .timeline-item--left .timeline-dot,
   #experience .timeline-item--right .timeline-dot {
     position: absolute;
@@ -748,7 +790,7 @@
     padding-bottom: 1.65rem;
   }
 
-  #experience .timeline-dot,
+  #experience .timeline:not(.xp-timeline) .timeline-dot,
   #experience .timeline-item--left .timeline-dot,
   #experience .timeline-item--right .timeline-dot {
     left: -1px;
@@ -803,7 +845,7 @@
     padding-left: 36px;
   }
 
-  #experience .timeline-dot,
+  #experience .timeline:not(.xp-timeline) .timeline-dot,
   #experience .timeline-item--left .timeline-dot,
   #experience .timeline-item--right .timeline-dot {
     width: 30px;
@@ -1062,6 +1104,15 @@
 
   #achievements .slider-track {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: center;
+    max-width: 760px;
+    margin-inline: auto;
+  }
+
+  #achievements .certificate-slide:last-child {
+    grid-column: 1 / -1;
+    max-width: calc(50% - .5rem);
+    margin-inline: auto;
   }
 
   #achievements .certificate-slide,
@@ -1095,7 +1146,10 @@
   #achievements .slider-track {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+    justify-content: center;
     gap: 1rem;
+    max-width: 480px;
+    margin-inline: auto;
   }
 
   #achievements .certificate-slide,
@@ -1114,6 +1168,7 @@
     min-height: 0;
     gap: 1rem;
     padding: clamp(.8rem, 3vw, 1rem);
+    margin-inline: auto;
   }
 
   #achievements .certificate-card > a {
