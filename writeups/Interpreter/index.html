@@ -335,7 +335,7 @@ def receive():
       <p>The application implements some restrictions on the input data. It uses a regular expression to validate the input.</p>
       <p><code class="language-python">pattern = re.compile(r"^[a-zA-Z0-9._'\"(){}=+/]+$")</code></p>
 
-      <p>Although input validation is present, the restrictions can be bypassed by constructing disallowed characters dynamically during evaluation. For example, strings containing space character is not allowed. We can use <code>chr(32)</code> to replace the space character, and <code>eval()</code> will interpret the expression and replace it with an actual space character.</p>
+      <p>Although input validation is present, the restrictions can be bypassed by constructing disallowed characters dynamically during evaluation. For example, strings containing space character are not allowed. We can use <code>chr(32)</code> to replace the space character, and <code>eval()</code> will interpret the expression and replace it with an actual space character.</p>
       <pre class="terminal"><code>
 'test 1234' --bypass_filter--> 'test'+chr(32)+'1234' --eval()--> 'test 1234'
 
